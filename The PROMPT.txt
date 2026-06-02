@@ -1,0 +1,498 @@
+THE PROMPT
+You are Claude Code acting as a senior Python data engineer, Streamlit app developer, and international trade data analyst.
+
+PROJECT GOAL
+Build a polished Streamlit dashboard + chatbot for OECD TiVA-MoS indicators.
+
+The app should be inspired by this existing app:
+https://chatbotstri.streamlit.app/
+
+But do NOT copy it blindly. Build something cleaner, more analytical, and visually stronger: a professional OECD-style dashboard with an integrated natural-language chatbot for exploring TiVA-MoS indicators.
+
+Context:
+The OECD TiVA-MoS database is about Trade in Value-Added indicators for services by Mode of Supply. It includes bilateral indicators that help analyse how countries engage in services trade through the four GATS modes of supply:
+- Mode 1: Cross-border supply
+- Mode 2: Consumption abroad
+- Mode 3: Commercial presence / foreign affiliates
+- Mode 4: Presence of natural persons
+
+The app must work from local datasets that I will provide in the repository. Do not assume exact column names before inspecting the files.
+
+IMPORTANT FIRST STEP
+Before coding the full app, inspect all provided dataset files and metadata files. Build the code around the actual schema.
+
+Expected input files may include:
+- CSV files
+- XLSX files
+- OECD ReadMe / data dictionary files
+- Indicator-level datasets such as EXGR, MFG_EXGR_SVC_VA, EXGR_SVC_FVA, FEXGR_SVC_DVA, SVC_DFD_FVA or similar
+
+If files differ from this list, adapt automatically.
+
+TECH STACK
+Use:
+- Python 3.11+
+- Streamlit
+- pandas or polars
+- duckdb for fast local analytical queries
+- plotly for interactive charts
+- openpyxl for reading Excel metadata
+- python-dotenv for environment variables
+- optional: rapidfuzz for fuzzy column/value matching
+- optional: anthropic or openai client only if an API key is available
+
+Do NOT use heavy unnecessary frameworks unless truly needed. LangChain is optional, not mandatory. A simple, transparent tool-calling design is preferred.
+
+REPOSITORY STRUCTURE
+Create this structure:
+
+tiva-mos-chatbot/
+├── app.py
+├── requirements.txt
+├── README.md
+├── .env.example
+├── data/
+│   ├── raw/
+│   ├── processed/
+│   └── metadata/
+├── src/
+│   ├── __init__.py
+│   ├── config.py
+│   ├── data_loader.py
+│   ├── schema_inspector.py
+│   ├── transformations.py
+│   ├── indicators.py
+│   ├── query_engine.py
+│   ├── chatbot.py
+│   ├── prompts.py
+│   ├── charts.py
+│   └── ui_components.py
+├── tests/
+│   ├── test_data_loader.py
+│   ├── test_indicators.py
+│   └── test_query_engine.py
+└── assets/
+    └── theme.css
+
+APP DESIGN REQUIREMENTS
+The app must have a modern analytical layout, not a boring default Streamlit page.
+
+Use:
+- Wide layout
+- Sidebar filters
+- Metric cards
+- Tabs
+- Plotly visualisations
+- Clean typography
+- OECD-inspired professional color palette: deep blue, light blue, grey, white
+- No messy rainbow charts
+- Clear explanatory footnotes
+- Responsive design as much as Streamlit allows
+
+Main navigation tabs:
+
+1. Executive Overview
+2. Indicator Explorer
+3. Country / Partner Comparison
+4. Mode of Supply Breakdown
+5. Bilateral Flow Explorer
+6. Chatbot
+7. Data Dictionary / Method Notes
+
+TAB 1: EXECUTIVE OVERVIEW
+Show:
+- Selected indicator
+- Selected reporting economy
+- Selected partner economy or world aggregate
+- Selected service industry
+- Selected year range
+- Latest available value
+- Change since first selected year
+- CAGR if meaningful
+- Dominant mode of supply
+- Share of Mode 3 if available
+- Top partner economies
+- Top service industries
+
+Charts:
+- Time series line chart
+- Mode-of-supply stacked area or stacked bar
+- Top 10 partner bar chart
+- Optional heatmap of country-partner values
+
+TAB 2: INDICATOR EXPLORER
+Allow the user to select:
+- Indicator
+- Reporting economy
+- Partner economy
+- Service industry
+- Mode of supply
+- Year range
+- Unit / measure if present
+
+Show:
+- Filtered table
+- Download button
+- Time series
+- Year-on-year growth
+- Share by mode
+- Ranking by country or partner
+
+TAB 3: COUNTRY / PARTNER COMPARISON
+Allow comparison of multiple economies for a selected:
+- indicator
+- partner
+- industry
+- mode
+- year or year range
+
+Charts:
+- Multi-country line chart
+- Ranking bar chart
+- Indexed change chart, with base year = first selected year
+- Optional small multiples if feasible
+
+TAB 4: MODE OF SUPPLY BREAKDOWN
+Focus on GATS modes:
+- Mode 1
+- Mode 2
+- Mode 3
+- Mode 4
+
+Show:
+- Absolute values by mode
+- Percentage shares by mode
+- Change in shares over time
+- Highlight if Mode 3 dominates
+- Explain overlap caveats where applicable, especially when adding Mode 3 and cross-border trade
+
+Charts:
+- Stacked bar
+- 100% stacked bar
+- Donut chart only if it adds value; otherwise avoid
+- Time-series shares
+
+TAB 5: BILATERAL FLOW EXPLORER
+Build an interface for origin-destination or reporter-partner flows.
+
+Features:
+- Select reporter
+- Select partner
+- Select indicator
+- Select mode
+- Select industry
+- Select year
+
+Charts:
+- Bilateral flow table
+- Top partner chart
+- Heatmap matrix if data allows
+- Optional Sankey-style chart for reporter → partner → mode or industry
+
+TAB 6: CHATBOT
+Build a chatbot that answers questions about the loaded TiVA-MoS data.
+
+The chatbot must be grounded in the dataset. It must NOT hallucinate.
+
+The chatbot should be able to answer questions like:
+- “What is the trend of Mode 3 services exports for France?”
+- “Which countries have the highest services exports through commercial presence in 2020?”
+- “Compare Germany and Italy for EXGR by mode of supply.”
+- “What does EXGR mean?”
+- “Which service industries rely most on Mode 3?”
+- “Show the top 10 partners for the United States in business services.”
+- “What changed between 1995 and 2020 for Japan?”
+- “Explain the difference between Mode 1 and Mode 3.”
+- “Create a chart for France’s services exports by mode.”
+
+The chatbot should have two layers:
+
+Layer A: deterministic analytical tools
+- parse user intent
+- map entities to dataset values
+- run safe duckdb/pandas queries
+- return computed results
+- produce charts when requested
+
+Layer B: LLM explanation layer
+- only explain results returned by Layer A
+- do not invent values
+- cite the selected filters used
+- if the requested value is unavailable, say so clearly
+
+If no LLM API key is available:
+- chatbot should still work in “rule-based analytical mode”
+- answer common metadata questions
+- generate tables/charts based on selected filters
+- explain limitations
+
+LLM SAFETY RULES
+The chatbot must follow these rules:
+- Never fabricate values.
+- Never answer from memory when the dataset can be queried.
+- Always mention the indicator, economy, partner, industry, mode, and year range used.
+- If ambiguous, ask one concise clarification question.
+- If multiple matches exist for a country, industry, or indicator, show likely matches.
+- If a query asks for unavailable years or indicators, explain what is available.
+- Do not make policy claims beyond the dataset unless clearly labelled as interpretation.
+- For external definitions, prefer the local metadata / ReadMe if available.
+
+DATA LOADING REQUIREMENTS
+Create a robust data ingestion pipeline.
+
+The data loader must:
+1. Scan /data/raw and /data/metadata
+2. Identify CSV and XLSX files
+3. Read metadata sheets if present
+4. Infer columns for:
+   - indicator
+   - reporter / country / economy
+   - partner
+   - industry
+   - mode of supply
+   - year / time period
+   - value
+   - unit
+5. Normalize column names to snake_case
+6. Preserve original column names in a schema mapping
+7. Convert year columns to integer if possible
+8. Convert value columns to numeric
+9. Store processed parquet files in /data/processed if useful
+10. Build a DuckDB database or in-memory views for querying
+
+Create a schema inspector page or function that prints:
+- dataset names
+- row counts
+- column names
+- detected dimensions
+- unique values for key dimensions
+- year coverage
+- missing value summary
+
+DATA MODEL
+Create a canonical long-format dataframe with columns as available:
+
+dataset_name
+indicator_code
+indicator_name
+reporter_code
+reporter_name
+partner_code
+partner_name
+industry_code
+industry_name
+mode_code
+mode_name
+year
+value
+unit
+measure
+source_file
+
+If some fields are absent, keep them as null but do not break the app.
+
+INDICATOR METADATA
+Build an indicator dictionary from metadata where possible.
+
+For each indicator, store:
+- indicator code
+- full name
+- short definition
+- unit
+- caveats
+- source dataset
+- available dimensions
+
+If the metadata does not provide a definition, create a placeholder:
+“Definition not found in provided metadata.”
+
+QUERY ENGINE
+Create a query_engine.py module with functions such as:
+
+get_available_values(dimension)
+filter_data(filters)
+get_time_series(filters)
+get_latest_value(filters)
+get_growth(filters)
+get_cagr(filters)
+get_top_n(filters, dimension, n=10)
+get_mode_shares(filters)
+compare_countries(filters, countries)
+compare_partners(filters, partners)
+make_bilateral_matrix(filters)
+validate_filters(filters)
+fuzzy_match_dimension_value(user_text, dimension)
+
+The query engine should be tested independently from Streamlit.
+
+CHARTS
+Create reusable Plotly chart functions:
+
+plot_time_series(df, x="year", y="value", color=None)
+plot_stacked_mode_share(df)
+plot_top_n_bar(df)
+plot_heatmap(df)
+plot_indexed_change(df)
+plot_bilateral_sankey(df)
+plot_share_over_time(df)
+
+All charts must:
+- have clear titles
+- show units
+- use consistent formatting
+- handle empty data gracefully
+- avoid unreadable labels
+
+CHATBOT IMPLEMENTATION DETAIL
+Create src/chatbot.py with:
+
+- classify_user_intent(message)
+- extract_entities(message, available_metadata)
+- resolve_entities_to_dataset_values(entities)
+- build_query_plan(intent, resolved_entities)
+- execute_query_plan(query_plan)
+- generate_response(query_result, question)
+- optionally_generate_chart(query_result, intent)
+
+Use a “query plan” object, for example:
+
+{
+  "intent": "rank_top_partners",
+  "filters": {
+    "indicator_code": "EXGR",
+    "reporter_name": "France",
+    "industry_name": null,
+    "mode_name": "Mode 3",
+    "year": 2020
+  },
+  "group_by": "partner_name",
+  "metric": "value",
+  "sort": "desc",
+  "limit": 10,
+  "chart": "bar"
+}
+
+The app should display:
+- the chatbot answer
+- the query/filter assumptions
+- a chart if relevant
+- a table of results
+- a download button for the result
+
+USER EXPERIENCE
+Sidebar:
+- dataset selector
+- indicator selector
+- reporter selector
+- partner selector
+- industry selector
+- mode selector
+- year range selector
+- reset filters button
+
+Main dashboard:
+- title: “TiVA-MoS Explorer”
+- subtitle: “Trade in Value-Added indicators for services by mode of supply”
+- short methodological note
+- tabs as above
+
+Add sample questions in the chatbot:
+- “Show Mode 3 services exports for France over time.”
+- “Compare Germany, France and Italy for EXGR in 2020.”
+- “Which partners dominate US services exports by mode?”
+- “What is the share of commercial presence in total services trade?”
+- “Explain this indicator in plain English.”
+
+STYLE
+Make the UI look premium:
+- Use custom CSS in assets/theme.css
+- Use cards with subtle borders and shadows
+- Use concise headings
+- Use icons sparingly
+- Use professional colors
+- Do not overuse emojis
+- Keep OECD-style seriousness; stylish but not childish
+
+ERROR HANDLING
+The app must not crash when:
+- no data files exist
+- a dataset has unexpected columns
+- selected filters return empty data
+- metadata is incomplete
+- LLM API key is missing
+- country names are misspelled
+- year range is outside available data
+
+Instead, show helpful messages.
+
+README REQUIREMENTS
+Write a README.md explaining:
+- project purpose
+- expected data location
+- setup commands
+- how to run the app
+- how the chatbot works
+- how to add new TiVA-MoS datasets
+- limitations
+- environment variables
+
+Include commands:
+
+python -m venv .venv
+source .venv/bin/activate   # Mac/Linux
+.venv\Scripts\activate      # Windows
+pip install -r requirements.txt
+streamlit run app.py
+
+ENVIRONMENT
+Create .env.example with:
+
+ANTHROPIC_API_KEY=
+OPENAI_API_KEY=
+LLM_PROVIDER=anthropic
+LLM_MODEL=claude-3-5-sonnet-latest
+
+If no API key is present, app should continue in local analytical mode.
+
+TESTING
+Create basic tests:
+- data loading does not fail
+- canonical schema is created
+- filter_data returns expected structure
+- growth calculation works
+- top_n function works
+- empty filters handled gracefully
+
+DEVELOPMENT SEQUENCE
+Do the work in this order:
+
+1. Inspect files in data/raw and data/metadata.
+2. Print a schema report.
+3. Implement robust data loader.
+4. Create canonical long-format dataset.
+5. Implement query engine.
+6. Implement charts.
+7. Build Streamlit UI.
+8. Build chatbot deterministic query planner.
+9. Add optional LLM explanation layer.
+10. Add tests.
+11. Add README.
+12. Run the app and fix errors.
+
+DELIVERABLE
+At the end, provide:
+- completed repository files
+- instructions to run
+- summary of detected dataset schema
+- known limitations
+- next-step suggestions
+
+IMPORTANT QUALITY BAR
+This should be a working analytical tool, not a demo. Prioritise correctness, transparency, and data grounding over flashy visuals. The dashboard can be beautiful, but the computations must be auditable.
+```
+
+I would also add one sentence to Claude before running it: **“Do not proceed beyond schema inspection until you have shown me the detected columns and your proposed canonical mapping.”** That will prevent a lot of silent wrong assumptions.
+
+[1]: https://www.oecd.org/en/data/datasets/trade-in-value-added-indicators-for-services-by-mode-of-supply.html?utm_source=chatgpt.com "Trade in Value-Added Indicators for Services by Mode of ..."
+[2]: https://www.oecd.org/content/dam/oecd/en/data/datasets/trade-in-value-added-indicators-for-services-by-mode-of-supply/ReadMe_TIVAMOS.xlsx?utm_source=chatgpt.com "ReadMe_TIVAMOS"
+[3]: https://docs.streamlit.io/develop/tutorials/chat-and-llm-apps/build-conversational-apps?utm_source=chatgpt.com "Build a basic LLM chat app - Streamlit Docs"

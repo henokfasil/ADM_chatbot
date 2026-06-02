@@ -1,0 +1,500 @@
+"""
+TiVA-MoS Explorer — main Streamlit application.
+"""
+from __future__ import annotations
+
+import logging
+import sys
+from pathlib import Path
+
+import pandas as pd
+import streamlit as st
+
+# ── path bootstrap ─────────────────────────────────────────────────────────
+sys.path.insert(0, str(Path(__file__).parent))
+
+logging.basicConfig(level=logging.INFO)
+
+from src.config import DATASETS, ISO3_NAMES, ISIC_NAMES
+from src.data_loader import load_all, schema_report
+from src.query_engine import (
+    filter_data, get_time_series, get_top_n, get_growth,
+    get_mode_shares, compare_countries, get_sector_ranking,
+    get_years, get_available_values,
+)
+from src.charts import (
+    plot_time_series, plot_stacked_bar, plot_top_n_bar,
+    plot_heatmap, plot_indexed_change, plot_mode_shares_donut,
+    plot_sector_ranking,
+)
+from src.chatbot import respond, ChatResponse
+from src.ui_components import (
+    inject_css, render_header, render_sidebar, render_metric_row,
+    render_filter_chips, render_table_with_download, render_footnote,
+    no_data_message, info_box,
+)
+
+# ── page config ────────────────────────────────────────────────────────────
+st.set_page_config(
+    page_title="TiVA-MoS Explorer",
+    page_icon="📊",
+    layout="wide",
+    initial_sidebar_state="expanded",
+)
+
+inject_css()
+
+# ── load data once ─────────────────────────────────────────────────────────
+@st.cache_data(show_spinner="Loading TiVA-MoS data…")
+def _load():
+    return load_all()
+
+datasets = _load()
+data_available = bool(datasets)
+
+# ── header ─────────────────────────────────────────────────────────────────
+render_header()
+
+if not data_available:
+    st.error(
+        "No data files found. Please place the 2026_prel_update CSV files in the "
+        "configured data directory. See README for setup instructions."
+    )
+    st.stop()
+
+# ── sidebar ─────────────────────────────────────────────────────────────────
+filters = render_sidebar()
+ds = filters["dataset_name"]
+yr = filters["year"]
+geo = filters["geo"]
+mode = filters["mode_name"]
+isic = filters["isic_code"]
+
+# ── tabs ────────────────────────────────────────────────────────────────────
+tabs = st.tabs([
+    "Chatbot",
+    "Executive Overview",
+    "Indicator Explorer",
+    "Country Comparison",
+    "Mode of Supply",
+    "Bilateral / Sector",
+    "Data Dictionary",
+])
+
+# ══════════════════════════════════════════════════════════════════════════════
+# TAB 2 — Executive Overview
+# ══════════════════════════════════════════════════════════════════════════════
+with tabs[1]:
+    st.markdown('<p class="section-title">Executive Overview</p>', unsafe_allow_html=True)
+    render_filter_chips(filters)
+
+    # ── metric row ──────────────────────────────────────────────────────────
+    active_filters: dict = {"dataset_name": ds}
+    if geo:
+        active_filters["geo"] = geo
+    if mode:
+        active_filters["mode_name"] = mode
+    if isic:
+        active_filters["isic_code"] = isic
+    if yr:
+        active_filters["year"] = yr
+
+    df_filtered = filter_data(active_filters)
+
+    if df_filtered.empty:
+        no_data_message()
+    else:
+        latest_val = df_filtered["value"].mean()
+        n_economies = df_filtered["geo"].nunique()
+        n_modes = df_filtered["mode_name"].nunique() if "mode_name" in df_filtered.columns else 0
+
+        growth_data = None
+        if geo:
+            growth_data = get_growth(ds, geo, mode_name=mode, isic_code=isic)
+
+        chg_txt = ""
+        chg_positive = None
+        if growth_data and growth_data["pct_change"] is not None:
+            chg_val = growth_data["pct_change"]
+            chg_txt = f"{chg_val:+.1f}% ({growth_data['first_year']}→{growth_data['last_year']})"
+            chg_positive = chg_val >= 0
+
+        metrics = [
+            ("Dataset", DATASETS[ds]["label"], DATASETS[ds]["unit"]),
+            ("Economy", ISO3_NAMES.get(geo, geo) if geo else f"{n_economies} economies", ""),
+            ("Latest value (avg)", f"{latest_val:.2f}", DATASETS[ds]["unit"]),
+            ("Change", chg_txt or "N/A", ""),
+        ]
+        render_metric_row(metrics)
+
+        st.markdown("")
+
+        col1, col2 = st.columns(2)
+
+        # Time series (if mos3, show sector trend; otherwise mode trend)
+        with col1:
+            st.markdown('<p class="section-title">Trend by Mode</p>', unsafe_allow_html=True)
+            ts_filters: dict = {"dataset_name": ds}
+            if geo:
+                ts_filters["geo"] = geo
+            if isic:
+                ts_filters["isic_code"] = isic
+            ts_df = filter_data(ts_filters)
+            if not ts_df.empty and "mode_name" in ts_df.columns:
+                fig = plot_time_series(ts_df, color="mode_name", dataset_name=ds)
+                st.plotly_chart(fig, use_container_width=True)
+            else:
+                no_data_message("trend")
+
+        with col2:
+            st.markdown('<p class="section-title">Mode Shares</p>', unsafe_allow_html=True)
+            shares_df = get_mode_shares(ds, geo=geo, year=yr, isic_code=isic)
+            if not shares_df.empty:
+                fig = plot_stacked_bar(
+                    shares_df, x="mode_name", y="value",
+                    color="mode_name", dataset_name=ds, title="Mode breakdown"
+                )
+                st.plotly_chart(fig, use_container_width=True)
+            else:
+                no_data_message("mode shares")
+
+        # Top 10 economies
+        st.markdown('<p class="section-title">Top 10 Economies</p>', unsafe_allow_html=True)
+        top_df = get_top_n(ds, year=yr, mode_name=mode, isic_code=isic, n=10)
+        if not top_df.empty:
+            fig = plot_top_n_bar(top_df, dataset_name=ds)
+            st.plotly_chart(fig, use_container_width=True)
+        else:
+            no_data_message("top economies")
+
+    render_footnote(ds)
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# TAB 3 — Indicator Explorer
+# ══════════════════════════════════════════════════════════════════════════════
+with tabs[2]:
+    st.markdown('<p class="section-title">Indicator Explorer</p>', unsafe_allow_html=True)
+    render_filter_chips(filters)
+
+    df_exp = filter_data(active_filters)
+
+    if df_exp.empty:
+        no_data_message()
+    else:
+        col1, col2 = st.columns([2, 1])
+        with col1:
+            fig = plot_time_series(df_exp, color="mode_name" if "mode_name" in df_exp.columns else None,
+                                   dataset_name=ds)
+            st.plotly_chart(fig, use_container_width=True)
+        with col2:
+            if geo:
+                growth = get_growth(ds, geo, mode_name=mode, isic_code=isic)
+                if growth["first_value"] is not None:
+                    info_box(
+                        f"<b>{ISO3_NAMES.get(geo, geo)}</b><br>"
+                        f"From {growth['first_year']}: {growth['first_value']:.2f}<br>"
+                        f"To {growth['last_year']}: {growth['last_value']:.2f}<br>"
+                        f"Change: {growth['pct_change']:+.1f}%"
+                    )
+
+        st.markdown('<p class="section-title">Filtered Data</p>', unsafe_allow_html=True)
+        display_cols = [c for c in
+            ["dataset_name", "year", "geo", "country_name", "mode_name",
+             "sector_name", "isic_code", "value"]
+            if c in df_exp.columns]
+        render_table_with_download(df_exp[display_cols], key="explorer", filename=f"{ds}_{yr}.csv")
+
+    render_footnote(ds)
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# TAB 4 — Country Comparison
+# ══════════════════════════════════════════════════════════════════════════════
+with tabs[3]:
+    st.markdown('<p class="section-title">Country / Partner Comparison</p>', unsafe_allow_html=True)
+
+    country_opts = {ISO3_NAMES.get(g, g): g for g in get_available_values("geo")}
+    selected_names = st.multiselect(
+        "Select economies to compare (2–6 recommended)",
+        options=sorted(country_opts.keys()),
+        default=[k for k in ["France", "Germany", "United States", "Japan"]
+                 if k in country_opts][:4],
+        key="cmp_geos",
+    )
+    selected_geos = [country_opts[n] for n in selected_names if n in country_opts]
+
+    if len(selected_geos) < 2:
+        info_box("Select at least 2 economies to compare.")
+    else:
+        cmp_df = compare_countries(ds, geos=selected_geos, mode_name=mode,
+                                   isic_code=isic, year=yr)
+        if cmp_df.empty:
+            no_data_message()
+        else:
+            col1, col2 = st.columns(2)
+            with col1:
+                fig = plot_time_series(cmp_df, color="country_name",
+                                       title="Time series comparison", dataset_name=ds)
+                st.plotly_chart(fig, use_container_width=True)
+            with col2:
+                base_yr = min(get_years(ds)) if get_years(ds) else None
+                fig = plot_indexed_change(cmp_df, color="country_name",
+                                          base_year=base_yr, dataset_name=ds)
+                st.plotly_chart(fig, use_container_width=True)
+
+            # Bar chart for selected year
+            yr_df = cmp_df[cmp_df["year"] == yr] if yr else cmp_df
+            if not yr_df.empty:
+                st.markdown(f'<p class="section-title">Ranking ({yr})</p>', unsafe_allow_html=True)
+                fig = plot_top_n_bar(
+                    yr_df.groupby("country_name", as_index=False)["value"].mean(),
+                    dataset_name=ds,
+                )
+                st.plotly_chart(fig, use_container_width=True)
+
+            render_table_with_download(cmp_df, key="cmp", filename="comparison.csv")
+
+    render_footnote(ds)
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# TAB 5 — Mode of Supply Breakdown
+# ══════════════════════════════════════════════════════════════════════════════
+with tabs[4]:
+    st.markdown('<p class="section-title">Mode of Supply Breakdown</p>', unsafe_allow_html=True)
+    render_filter_chips(filters)
+
+    mode_filters: dict = {"dataset_name": ds}
+    if geo:
+        mode_filters["geo"] = geo
+    if isic:
+        mode_filters["isic_code"] = isic
+
+    mode_df = filter_data(mode_filters)
+
+    if mode_df.empty or "mode_name" not in mode_df.columns:
+        no_data_message("mode breakdown")
+    else:
+        col1, col2 = st.columns(2)
+        with col1:
+            st.markdown("**Absolute values by mode**")
+            fig = plot_stacked_bar(mode_df, x="year", y="value", color="mode_name",
+                                   dataset_name=ds)
+            st.plotly_chart(fig, use_container_width=True)
+        with col2:
+            st.markdown("**100% share by mode**")
+            fig = plot_stacked_bar(mode_df, x="year", y="value", color="mode_name",
+                                   dataset_name=ds, pct=True)
+            st.plotly_chart(fig, use_container_width=True)
+
+        # Donut for selected year
+        if yr:
+            yr_mode_df = mode_df[mode_df["year"] == yr]
+            if not yr_mode_df.empty:
+                col3, col4 = st.columns(2)
+                with col3:
+                    st.markdown(f"**Mode shares — {yr}**")
+                    fig = plot_mode_shares_donut(yr_mode_df, dataset_name=ds)
+                    st.plotly_chart(fig, use_container_width=True)
+                with col4:
+                    shares = get_mode_shares(ds, geo=geo, year=yr, isic_code=isic)
+                    if not shares.empty:
+                        render_table_with_download(shares, key="mode_tbl",
+                                                   filename="mode_shares.csv")
+
+    info_box(
+        "<b>Note:</b> Mode 3 (commercial presence) and cross-border supply (Mode 1/4) "
+        "should not be summed directly as they can overlap in some TiVA-MoS indicators."
+    )
+    render_footnote(ds)
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# TAB 6 — Bilateral / Sector
+# ══════════════════════════════════════════════════════════════════════════════
+with tabs[5]:
+    st.markdown('<p class="section-title">Bilateral Flow Explorer & Sector Analysis</p>',
+                unsafe_allow_html=True)
+
+    col_l, col_r = st.columns(2)
+    with col_l:
+        st.markdown("**Mode 3 / Cross-border Ratio by Sector**")
+        sec_yr = st.selectbox("Year (sector chart)", sorted(get_years("mos3_to_xborder_ratio"),
+                              reverse=True), key="sec_yr")
+        sec_geo = st.selectbox(
+            "Economy (sector)",
+            ["(World average)"] + sorted(ISO3_NAMES.get(g, g)
+                                         for g in get_available_values("geo")),
+            key="sec_geo",
+        )
+        geo_filter_sec = None
+        if sec_geo != "(World average)":
+            name_to_iso = {v: k for k, v in ISO3_NAMES.items()}
+            geo_filter_sec = name_to_iso.get(sec_geo, sec_geo)
+
+        sec_df = get_sector_ranking(year=sec_yr, geo=geo_filter_sec, n=19)
+        if not sec_df.empty:
+            fig = plot_sector_ranking(sec_df,
+                title=f"Mode 3 / Cross-border ratio — {sec_geo} ({sec_yr})")
+            st.plotly_chart(fig, use_container_width=True)
+        else:
+            no_data_message("sector ranking")
+
+    with col_r:
+        st.markdown("**Heatmap: Economy × Mode**")
+        hm_filters: dict = {"dataset_name": ds}
+        if yr:
+            hm_filters["year"] = yr
+        hm_df = filter_data(hm_filters)
+        if not hm_df.empty and "mode_name" in hm_df.columns:
+            fig = plot_heatmap(hm_df, title=f"{DATASETS[ds]['label']} — {yr}", dataset_name=ds)
+            st.plotly_chart(fig, use_container_width=True)
+        else:
+            no_data_message("heatmap")
+
+    # Full sector table
+    st.markdown('<p class="section-title">Full Sector Table</p>', unsafe_allow_html=True)
+    sec_full = filter_data({
+        "dataset_name": "mos3_to_xborder_ratio",
+        "year": sec_yr,
+        **({} if not geo_filter_sec else {"geo": geo_filter_sec}),
+    })
+    if not sec_full.empty:
+        render_table_with_download(sec_full, key="sec_full", filename="sectors.csv")
+
+    render_footnote("mos3_to_xborder_ratio")
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# TAB 1 — Chatbot
+# ══════════════════════════════════════════════════════════════════════════════
+with tabs[0]:
+    st.markdown('<p class="section-title">TiVA-MoS Chatbot</p>', unsafe_allow_html=True)
+
+    from src.config import active_llm_provider
+    provider, _, model = active_llm_provider()
+    if provider:
+        info_box(f"LLM explanation layer active: <b>{provider}</b> / {model}")
+    else:
+        info_box(
+            "No LLM API key found — running in <b>analytical mode</b>. "
+            "Add GEMINI_API_KEY, GROK_API_KEY, or HUGGINGFACE_API_KEY to a .env file "
+            "for natural-language explanations."
+        )
+
+    # Sample questions
+    st.markdown("**Try a question:**")
+    sample_qs = [
+        "What are the top 10 economies by domestic VA in foreign demand?",
+        "Show mode shares for France in 2023.",
+        "Which sectors have the highest Mode 3 to cross-border ratio?",
+        "Compare Germany, France and Italy for Mode 3 in 2023.",
+        "What does Mode 3 mean?",
+        "Which economy has the highest GVC participation?",
+    ]
+    sample_cols = st.columns(3)
+    for i, q in enumerate(sample_qs):
+        if sample_cols[i % 3].button(q, key=f"sample_{i}"):
+            st.session_state["chat_input"] = q
+
+    st.divider()
+
+    # Chat history
+    if "chat_history" not in st.session_state:
+        st.session_state.chat_history = []
+
+    # Display history
+    for turn in st.session_state.chat_history:
+        with st.chat_message("user"):
+            st.write(turn["question"])
+        with st.chat_message("assistant", avatar="📊"):
+            st.markdown(turn["answer"])
+            if turn.get("df") is not None and not turn["df"].empty:
+                with st.expander("Show data table"):
+                    render_table_with_download(
+                        turn["df"], key=f"chat_dl_{turn['id']}", filename="chat_result.csv"
+                    )
+            if turn.get("plan"):
+                plan = turn["plan"]
+                with st.expander("Query details"):
+                    st.json({
+                        "intent": plan.intent,
+                        "dataset": plan.dataset_name,
+                        "geo": plan.geo,
+                        "mode": plan.mode_name,
+                        "isic": plan.isic_code,
+                        "year": plan.year,
+                    })
+
+    # Input
+    prefill = st.session_state.pop("chat_input", "")
+    user_input = st.chat_input("Ask about TiVA-MoS data…")
+    if not user_input and prefill:
+        user_input = prefill
+
+    if user_input:
+        with st.spinner("Analysing…"):
+            response: ChatResponse = respond(user_input)
+
+        turn = {
+            "id": len(st.session_state.chat_history),
+            "question": user_input,
+            "answer": response.answer,
+            "df": response.result_df,
+            "plan": response.plan,
+        }
+        st.session_state.chat_history.append(turn)
+
+        with st.chat_message("user"):
+            st.write(user_input)
+        with st.chat_message("assistant", avatar="📊"):
+            st.markdown(response.answer)
+            if response.result_df is not None and not response.result_df.empty:
+                with st.expander("Show data table"):
+                    render_table_with_download(
+                        response.result_df, key=f"chat_dl_new", filename="chat_result.csv"
+                    )
+            if response.plan:
+                with st.expander("Query details"):
+                    st.json({
+                        "intent": response.plan.intent,
+                        "dataset": response.plan.dataset_name,
+                        "geo": response.plan.geo,
+                        "mode": response.plan.mode_name,
+                        "year": response.plan.year,
+                    })
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# TAB 7 — Data Dictionary
+# ══════════════════════════════════════════════════════════════════════════════
+with tabs[6]:  # stays last
+    st.markdown('<p class="section-title">Data Dictionary & Method Notes</p>',
+                unsafe_allow_html=True)
+
+    st.markdown("### Indicators")
+    for name, meta in DATASETS.items():
+        with st.expander(f"**{meta['label']}** — `{name}`"):
+            st.markdown(f"**Unit:** {meta['unit']}")
+            st.markdown(f"**Description:** {meta['description']}")
+            st.markdown(f"**Mode columns:** {', '.join(meta['mode_cols'])}")
+            st.markdown(f"**Has sector dimension:** {'Yes' if meta['has_isic'] else 'No'}")
+
+    st.markdown("### Modes of Supply (GATS)")
+    from src.prompts import METADATA_DEFINITIONS
+    for term, defn in METADATA_DEFINITIONS.items():
+        with st.expander(f"**{term}**"):
+            st.markdown(defn)
+
+    st.markdown("### ISIC Sectors")
+    isic_df = pd.DataFrame([
+        {"Code": k, "Sector": v} for k, v in ISIC_NAMES.items()
+    ])
+    st.dataframe(isic_df, use_container_width=True, hide_index=True)
+
+    st.markdown("### Schema Report")
+    with st.expander("Show detected schema"):
+        st.markdown(schema_report())
+
+    render_footnote()

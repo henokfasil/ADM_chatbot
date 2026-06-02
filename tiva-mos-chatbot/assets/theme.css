@@ -1,0 +1,177 @@
+/* ── OECD-style TiVA-MoS dashboard theme ──────────────────────────────────── */
+
+@import url('https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@300;400;600;700&display=swap');
+
+html, body, [class*="css"] {
+    font-family: 'Source Sans Pro', Arial, sans-serif;
+}
+
+/* ── top bar / header ─────────────────────────────────────────────────────── */
+.tiva-header {
+    background: linear-gradient(135deg, #003087 0%, #0070C0 100%);
+    color: white;
+    padding: 1.4rem 2rem 1rem 2rem;
+    border-radius: 6px;
+    margin-bottom: 1.2rem;
+}
+.tiva-header h1 {
+    margin: 0 0 0.2rem 0;
+    font-size: 1.75rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+}
+.tiva-header p {
+    margin: 0;
+    font-size: 0.95rem;
+    opacity: 0.88;
+}
+
+/* ── metric cards ─────────────────────────────────────────────────────────── */
+.metric-card {
+    background: #ffffff;
+    border: 1px solid #e0e4ea;
+    border-left: 4px solid #003087;
+    border-radius: 6px;
+    padding: 1rem 1.2rem;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+.metric-card .metric-label {
+    font-size: 0.78rem;
+    color: #6D6E71;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.25rem;
+}
+.metric-card .metric-value {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #003087;
+    line-height: 1.1;
+}
+.metric-card .metric-sub {
+    font-size: 0.8rem;
+    color: #6D6E71;
+    margin-top: 0.2rem;
+}
+.metric-positive { border-left-color: #0070C0; }
+.metric-negative { border-left-color: #C00000; }
+
+/* ── section headings ─────────────────────────────────────────────────────── */
+.section-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #003087;
+    border-bottom: 2px solid #003087;
+    padding-bottom: 0.3rem;
+    margin: 1.2rem 0 0.8rem 0;
+}
+
+/* ── footnote / method note ───────────────────────────────────────────────── */
+.footnote {
+    font-size: 0.78rem;
+    color: #6D6E71;
+    border-top: 1px solid #e0e4ea;
+    padding-top: 0.5rem;
+    margin-top: 1rem;
+}
+
+/* ── chatbot messages ─────────────────────────────────────────────────────── */
+.chat-user {
+    background: #F0F4FA;
+    border-radius: 12px 12px 2px 12px;
+    padding: 0.7rem 1rem;
+    margin: 0.4rem 0;
+    max-width: 80%;
+    margin-left: auto;
+    font-size: 0.92rem;
+}
+.chat-bot {
+    background: #ffffff;
+    border: 1px solid #e0e4ea;
+    border-radius: 12px 12px 12px 2px;
+    padding: 0.7rem 1rem;
+    margin: 0.4rem 0;
+    max-width: 90%;
+    font-size: 0.92rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+.chat-bot .bot-label {
+    font-size: 0.72rem;
+    color: #0070C0;
+    font-weight: 600;
+    margin-bottom: 0.3rem;
+}
+
+/* ── filter chip ──────────────────────────────────────────────────────────── */
+.filter-chip {
+    display: inline-block;
+    background: #E9F1FA;
+    color: #003087;
+    border-radius: 12px;
+    padding: 0.15rem 0.65rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+    margin: 0.15rem;
+}
+
+/* ── sample question button ───────────────────────────────────────────────── */
+.sample-question {
+    display: inline-block;
+    background: #f7f9fc;
+    border: 1px solid #ccd6e0;
+    border-radius: 20px;
+    padding: 0.35rem 0.9rem;
+    font-size: 0.82rem;
+    color: #003087;
+    margin: 0.2rem;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+.sample-question:hover {
+    background: #E9F1FA;
+}
+
+/* ── info / warning boxes ─────────────────────────────────────────────────── */
+.info-box {
+    background: #EBF5FB;
+    border-left: 4px solid #0070C0;
+    border-radius: 4px;
+    padding: 0.7rem 1rem;
+    font-size: 0.88rem;
+    color: #1a3a5c;
+    margin: 0.8rem 0;
+}
+.warn-box {
+    background: #FEF9E7;
+    border-left: 4px solid #F39C12;
+    border-radius: 4px;
+    padding: 0.7rem 1rem;
+    font-size: 0.88rem;
+    color: #5D4037;
+    margin: 0.8rem 0;
+}
+
+/* ── table styling ────────────────────────────────────────────────────────── */
+.dataframe thead th {
+    background-color: #003087 !important;
+    color: white !important;
+    font-weight: 600;
+    font-size: 0.82rem;
+}
+.dataframe tbody tr:nth-child(even) {
+    background-color: #f7f9fc;
+}
+
+/* ── sidebar ──────────────────────────────────────────────────────────────── */
+[data-testid="stSidebar"] {
+    background-color: #f7f9fc;
+    border-right: 1px solid #e0e4ea;
+}
+[data-testid="stSidebar"] .sidebar-title {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #003087;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 0.5rem;
+}
