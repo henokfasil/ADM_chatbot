@@ -1,5 +1,6 @@
+# -*- coding: utf-8 -*-
 """
-Reusable Streamlit UI building blocks — premium design.
+Reusable Streamlit UI building blocks - premium design.
 """
 from __future__ import annotations
 
@@ -13,11 +14,11 @@ from src.query_engine import get_years, get_available_values, get_datasets
 
 # ── icons map for datasets ────────────────────────────────────────────────────
 _DS_ICONS = {
-    "dmst_va_in_frgn_dmnd":  "🌐",
-    "frgn_va_in_dmst_dmnd":  "📥",
-    "gvc_participation":     "🔗",
-    "va_in_mnf_export":      "🏭",
-    "mos3_to_xborder_ratio": "📊",
+    "dmst_va_in_frgn_dmnd":  "[DVA]",
+    "frgn_va_in_dmst_dmnd":  "[FVA]",
+    "gvc_participation":     "[GVC]",
+    "va_in_mnf_export":      "[MNF]",
+    "mos3_to_xborder_ratio": "[M3]",
 }
 
 # ── CSS ───────────────────────────────────────────────────────────────────────
@@ -119,13 +120,13 @@ def render_sidebar() -> dict:
     with st.sidebar:
         st.markdown("""
         <div class="sidebar-logo">
-          <span>⚡ TiVA-MoS Explorer</span>
+          <span>&#9889; TiVA-MoS Explorer</span>
         </div>
         """, unsafe_allow_html=True)
 
         st.markdown('<p class="sidebar-section">Dataset</p>', unsafe_allow_html=True)
         dataset_opts = {
-            f"{_DS_ICONS.get(k, '📊')}  {DATASETS[k]['label']}": k
+            f"{_DS_ICONS.get(k, '')}  {DATASETS[k]['label']}": k
             for k in get_datasets()
         }
         ds_label = st.selectbox("", list(dataset_opts.keys()),
@@ -181,8 +182,8 @@ def render_sidebar() -> dict:
 
 # ── metric cards ──────────────────────────────────────────────────────────────
 _MC_ICONS = {
-    "Dataset": "📋", "Economy": "🌍", "Latest value (avg)": "📈",
-    "Change": "↕", "Year": "📅", "Mode": "🔀",
+    "Dataset": "", "Economy": "", "Latest value (avg)": "",
+    "Change": "", "Year": "", "Mode": "",
 }
 
 def metric_card(label: str, value: str, sub: str = "",
@@ -220,11 +221,11 @@ def render_metric_row(metrics: list[tuple[str, str, str]]) -> None:
 # ── filter chips ──────────────────────────────────────────────────────────────
 def render_filter_chips(filters: dict) -> None:
     label_map = {
-        "dataset_name": lambda v: f"📋 {DATASETS.get(v, {}).get('label', v)}",
-        "geo":          lambda v: f"🌍 {ISO3_NAMES.get(v, v)}",
-        "mode_name":    lambda v: f"🔀 {v}",
-        "isic_code":    lambda v: f"🏭 {ISIC_NAMES.get(v, v)}",
-        "year":         lambda v: f"📅 {v}",
+        "dataset_name": lambda v: DATASETS.get(v, {}).get("label", v),
+        "geo":          lambda v: ISO3_NAMES.get(v, v),
+        "mode_name":    lambda v: v,
+        "isic_code":    lambda v: ISIC_NAMES.get(v, v),
+        "year":         lambda v: str(v),
     }
     chips = [
         f'<span class="filter-chip">{label_map[k](v)}</span>'
@@ -250,7 +251,7 @@ def render_table_with_download(
         return
     st.dataframe(df, height=height)
     st.download_button(
-        "⬇  Download CSV",
+        "Download CSV",
         data=df.to_csv(index=False).encode("utf-8"),
         file_name=filename,
         mime="text/csv",
@@ -282,7 +283,7 @@ def render_footnote(dataset_name: str | None = None) -> None:
         desc = DATASETS.get(dataset_name, {}).get("description", "")
         if desc:
             extra = f"  ·  {desc[:120]}…"
-    st.markdown(f'<p class="footnote">📌 {base}{extra}</p>', unsafe_allow_html=True)
+    st.markdown(f'<p class="footnote">{base}{extra}</p>', unsafe_allow_html=True)
 
 
 # ── info / warn boxes ─────────────────────────────────────────────────────────
@@ -290,7 +291,7 @@ def no_data_message(context: str = "") -> None:
     msg = "No data found for the selected filters."
     if context:
         msg += f" ({context})"
-    st.markdown(f'<div class="warn-box">⚠️  {msg}</div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="warn-box">&#9888; {msg}</div>', unsafe_allow_html=True)
 
 def info_box(text: str) -> None:
-    st.markdown(f'<div class="info-box">ℹ️  {text}</div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="info-box">&#8505; {text}</div>', unsafe_allow_html=True)
