@@ -200,7 +200,15 @@ with col_chat:
     for i, q in enumerate(sample_qs):
         col = sc1 if i % 2 == 0 else sc2
         if col.button(q, key=f"sq_{i}", use_container_width=True):
-            st.session_state["chat_input"] = q
+            with st.spinner("Thinking..."):
+                _resp = respond(q)
+            st.session_state.chat_history.insert(0, {
+                "id":       len(st.session_state.chat_history),
+                "question": q,
+                "answer":   _resp.answer,
+                "df":       _resp.result_df,
+                "plan":     _resp.plan,
+            })
             st.rerun()
 
 
