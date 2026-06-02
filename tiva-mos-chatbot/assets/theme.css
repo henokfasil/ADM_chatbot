@@ -618,7 +618,7 @@ html, body, [class*="css"], .stApp {
     background: transparent !important;
 }
 
-[data-testid="stForm"] textarea {
+[data-testid="stForm"] input[type="text"] {
     font-family: 'Inter', sans-serif !important;
     font-size: 0.92rem !important;
     color: #1F2937 !important;
@@ -628,17 +628,15 @@ html, body, [class*="css"], .stApp {
     outline: none !important;
     box-shadow: none !important;
     padding: 0.55rem 0.4rem !important;
-    resize: none !important;
-    line-height: 1.5 !important;
+    height: 46px !important;
 }
 
-[data-testid="stForm"] textarea:focus {
+[data-testid="stForm"] input[type="text"]:focus {
     border: none !important;
     box-shadow: none !important;
     outline: none !important;
 }
 
-[data-testid="stForm"] textarea::placeholder,
 [data-testid="stForm"] input::placeholder {
     color: #9CA3AF !important;
     font-style: italic !important;

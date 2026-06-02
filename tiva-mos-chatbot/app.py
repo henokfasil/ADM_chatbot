@@ -92,12 +92,11 @@ with col_chat:
 
     prefill = st.session_state.pop("chat_input", "")
     with st.form("chat_form", clear_on_submit=True, border=False):
-        user_input = st.text_area(
+        user_input = st.text_input(
             "", value=prefill,
             placeholder="Ask about anything...",
             label_visibility="collapsed",
             key="chat_text",
-            height=80,
         )
         submitted = st.form_submit_button("Send", use_container_width=True)
 
