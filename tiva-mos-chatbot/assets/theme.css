@@ -510,6 +510,63 @@ html, body, [class*="css"], .stApp {
 ::-webkit-scrollbar-thumb:hover { background: #9CA3AF; }
 
 /* ═══════════════════════════════════════════════════════════════════════════
+   CHAT INPUT BOX
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* outer wrapper — gives it the rectangle feel */
+[data-testid="stChatInputContainer"] {
+    background: #ffffff !important;
+    border: 2px solid #BFDBFE !important;
+    border-radius: 14px !important;
+    padding: 0.4rem 0.6rem !important;
+    box-shadow: 0 4px 20px rgba(0, 48, 135, 0.08) !important;
+    margin: 0.8rem 0 1.2rem 0 !important;
+    transition: border-color 0.2s, box-shadow 0.2s !important;
+}
+
+/* highlight on focus */
+[data-testid="stChatInputContainer"]:focus-within {
+    border-color: #003087 !important;
+    box-shadow: 0 4px 24px rgba(0, 48, 135, 0.18) !important;
+}
+
+/* the actual text input inside */
+[data-testid="stChatInputContainer"] textarea {
+    font-family: 'Inter', sans-serif !important;
+    font-size: 0.95rem !important;
+    color: #1F2937 !important;
+    background: transparent !important;
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+    padding: 0.5rem 0.4rem !important;
+    min-height: 52px !important;
+    resize: none !important;
+}
+
+/* placeholder text */
+[data-testid="stChatInputContainer"] textarea::placeholder {
+    color: #9CA3AF !important;
+    font-style: italic !important;
+}
+
+/* send button inside */
+[data-testid="stChatInputContainer"] button {
+    background: linear-gradient(135deg, #003087, #0055A5) !important;
+    border: none !important;
+    border-radius: 10px !important;
+    padding: 0.5rem 0.75rem !important;
+    box-shadow: 0 2px 8px rgba(0, 48, 135, 0.3) !important;
+    transition: all 0.2s !important;
+    color: white !important;
+}
+
+[data-testid="stChatInputContainer"] button:hover {
+    box-shadow: 0 4px 14px rgba(0, 48, 135, 0.4) !important;
+    transform: scale(1.05) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
    SPINNER / LOADING
    ═══════════════════════════════════════════════════════════════════════════ */
 [data-testid="stSpinner"] { color: #003087 !important; }
