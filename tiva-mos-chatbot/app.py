@@ -375,13 +375,13 @@ with tabs[0]:
 
     # ?"??"? intro card ?"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"?
     _llm_status = (
-        f"??... &nbsp;<b>{_provider.upper()}</b> ({_model}) active - full natural-language explanations enabled."
+        f"&#9989; &nbsp;<b>{_provider.upper()}</b> ({_model}) active &mdash; full natural-language explanations enabled."
         if _provider else
-        "?????? &nbsp;Running in <b>analytical mode</b> - data queries and charts work without an LLM key."
+        "&#9881; &nbsp;Running in <b>analytical mode</b> &mdash; data queries and charts work without an LLM key."
     )
     st.markdown(f"""
     <div class="chat-intro">
-      <h3>??'? Ask anything about TiVA-MoS data</h3>
+      <h3>&#128172; Ask anything about TiVA-MoS data</h3>
       <p>
         Explore trade in value-added indicators across 82 economies and 4 modes of supply.
         Ask in plain English - I'll query the data and explain the results.<br>
@@ -432,7 +432,7 @@ with tabs[0]:
     if not st.session_state.chat_history:
         st.markdown("""
         <div style="text-align:center;padding:3rem 1rem;color:#9CA3AF;">
-          <div style="font-size:2.5rem;margin-bottom:0.8rem;">??'?</div>
+          <div style="font-size:2.5rem;margin-bottom:0.8rem;">&#128172;</div>
           <div style="font-weight:600;font-size:0.95rem;color:#6B7280;">
             Start the conversation above
           </div>
