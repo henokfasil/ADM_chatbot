@@ -144,30 +144,53 @@ with col_chat:
             </div>
             """, unsafe_allow_html=True)
 
-            # Chart (compact, fits narrow column)
+            # Chart — auto-select based on intent, with smart fallback
             df_turn = turn.get("df")
             plan    = turn.get("plan")
             if df_turn is not None and not df_turn.empty and plan:
                 _ds  = plan.dataset_name or "dmst_va_in_frgn_dmnd"
                 _fig = None
+
                 if plan.intent == "top_n" and "country_name" in df_turn.columns:
                     _fig = plot_top_n_bar(df_turn, dataset_name=_ds)
+
                 elif plan.intent == "sector" and "sector_name" in df_turn.columns:
                     _fig = plot_sector_ranking(df_turn)
+
                 elif plan.intent == "mode_shares" and "mode_name" in df_turn.columns:
                     _fig = plot_stacked_bar(df_turn, x="mode_name", y="value",
                                             color="mode_name", dataset_name=_ds,
                                             title="Mode breakdown")
+
                 elif plan.intent in ("time_series", "growth") and "year" in df_turn.columns:
                     _color = ("mode_name" if "mode_name" in df_turn.columns
                               else "country_name" if "country_name" in df_turn.columns
                               else None)
                     _fig = plot_time_series(df_turn, color=_color, dataset_name=_ds)
+
                 elif plan.intent == "compare" and "year" in df_turn.columns:
                     _fig = plot_time_series(df_turn, color="country_name",
                                             dataset_name=_ds, title="Comparison")
+
+                # ── smart fallback for any intent with data ────────────────
+                if _fig is None:
+                    if "country_name" in df_turn.columns and "value" in df_turn.columns:
+                        # ranked bar — best default for country data
+                        _fig = plot_top_n_bar(df_turn.head(15), dataset_name=_ds)
+                    elif "sector_name" in df_turn.columns and "value" in df_turn.columns:
+                        _fig = plot_sector_ranking(df_turn.head(19))
+                    elif "mode_name" in df_turn.columns and "value" in df_turn.columns:
+                        _fig = plot_stacked_bar(df_turn, x="mode_name", y="value",
+                                                color="mode_name", dataset_name=_ds,
+                                                title="Mode breakdown")
+                    elif "year" in df_turn.columns and "value" in df_turn.columns:
+                        _color = ("mode_name" if "mode_name" in df_turn.columns
+                                  else "country_name" if "country_name" in df_turn.columns
+                                  else None)
+                        _fig = plot_time_series(df_turn, color=_color, dataset_name=_ds)
+
                 if _fig:
-                    _fig.update_layout(height=260, margin=dict(t=30, b=20, l=10, r=10))
+                    _fig.update_layout(height=280, margin=dict(t=35, b=20, l=10, r=10))
                     st.plotly_chart(_fig, use_container_width=True,
                                     key=f"chart_{turn['id']}")
 
