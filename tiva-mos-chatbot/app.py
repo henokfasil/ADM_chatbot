@@ -410,18 +410,34 @@ with tabs[0]:
     if "chat_history" not in st.session_state:
         st.session_state.chat_history = []
 
-    # ?"??"? input bar (at top so it's always visible) ?"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"?
+    # ── styled input form ──────────────────────────────────────────────────
     prefill = st.session_state.pop("chat_input", "")
-    user_input = st.chat_input("Ask about TiVA-MoS data...")
-    if not user_input and prefill:
-        user_input = prefill
 
-    if user_input:
+    st.markdown("""
+    <div class="chat-input-label">
+      <span>&#128172; Type your question below &mdash; press Enter or click Send</span>
+    </div>
+    """, unsafe_allow_html=True)
+
+    with st.form("chat_form", clear_on_submit=True, border=False):
+        col_q, col_btn = st.columns([11, 1])
+        with col_q:
+            user_input = st.text_input(
+                "",
+                value=prefill,
+                placeholder="Ask about TiVA-MoS data...",
+                label_visibility="collapsed",
+                key="chat_text",
+            )
+        with col_btn:
+            submitted = st.form_submit_button("Send", use_container_width=True)
+
+    if submitted and user_input and user_input.strip():
         with st.spinner("Analysing..."):
-            response: ChatResponse = respond(user_input)
-        st.session_state.chat_history.insert(0, {   # newest first
+            response: ChatResponse = respond(user_input.strip())
+        st.session_state.chat_history.insert(0, {
             "id":       len(st.session_state.chat_history),
-            "question": user_input,
+            "question": user_input.strip(),
             "answer":   response.answer,
             "df":       response.result_df,
             "plan":     response.plan,
