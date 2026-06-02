@@ -661,6 +661,9 @@ html, body, [class*="css"], .stApp {
     transform: translateY(-1px) !important;
 }
 
+/* ── hide Streamlit's "Press Enter to submit" hint ───────────────────────── */
+[data-testid="InputInstructions"] { display: none !important; }
+
 /* ═══════════════════════════════════════════════════════════════════════════
    SPINNER / LOADING
    ═══════════════════════════════════════════════════════════════════════════ */
