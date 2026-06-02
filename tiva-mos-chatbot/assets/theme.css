@@ -1,177 +1,515 @@
-/* ── OECD-style TiVA-MoS dashboard theme ──────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════════════════════
+   TiVA-MoS Explorer — Premium UI Theme
+   ═══════════════════════════════════════════════════════════════════════════ */
 
-@import url('https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@300;400;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
 
-html, body, [class*="css"] {
-    font-family: 'Source Sans Pro', Arial, sans-serif;
+/* ── base ─────────────────────────────────────────────────────────────────── */
+html, body, [class*="css"], .stApp {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    -webkit-font-smoothing: antialiased;
 }
 
-/* ── top bar / header ─────────────────────────────────────────────────────── */
+/* ── page background ──────────────────────────────────────────────────────── */
+.stApp {
+    background: #F0F4F8;
+}
+.main .block-container {
+    padding-top: 1rem !important;
+    max-width: 1400px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   HEADER BANNER
+   ═══════════════════════════════════════════════════════════════════════════ */
 .tiva-header {
-    background: linear-gradient(135deg, #003087 0%, #0070C0 100%);
+    background: linear-gradient(135deg, #0D1B4B 0%, #003087 45%, #0055A5 100%);
     color: white;
-    padding: 1.4rem 2rem 1rem 2rem;
-    border-radius: 6px;
+    padding: 1.8rem 2.4rem 1.5rem 2.4rem;
+    border-radius: 16px;
+    margin-bottom: 1.4rem;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(13, 27, 75, 0.28);
+}
+
+/* animated mesh overlay */
+.tiva-header::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image:
+        radial-gradient(circle at 20% 50%, rgba(0,160,230,0.18) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(0,102,204,0.15) 0%, transparent 45%);
+    pointer-events: none;
+}
+
+/* dot grid */
+.tiva-header::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(rgba(255,255,255,0.07) 1px, transparent 1px);
+    background-size: 28px 28px;
+    pointer-events: none;
+}
+
+.tiva-header-inner {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+}
+
+.tiva-header h1 {
+    margin: 0 0 0.3rem 0;
+    font-size: 2rem;
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    line-height: 1;
+    text-shadow: 0 2px 12px rgba(0,0,0,0.2);
+}
+
+.tiva-header .tagline {
+    margin: 0;
+    font-size: 0.88rem;
+    font-weight: 400;
+    opacity: 0.82;
+    letter-spacing: 0.01em;
+}
+
+.tiva-header .header-badges {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    align-items: center;
+    padding-top: 0.2rem;
+}
+
+.tiva-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.2);
+    backdrop-filter: blur(8px);
+    color: white;
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 0.28rem 0.7rem;
+    border-radius: 20px;
+    letter-spacing: 0.03em;
+    white-space: nowrap;
+}
+
+.tiva-badge.llm-active {
+    background: rgba(0, 200, 120, 0.2);
+    border-color: rgba(0, 200, 120, 0.4);
+}
+
+.tiva-badge.llm-offline {
+    background: rgba(255, 180, 0, 0.2);
+    border-color: rgba(255, 180, 0, 0.4);
+}
+
+.tiva-badge .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #00C878;
+    box-shadow: 0 0 6px #00C878;
+    animation: pulse-dot 2s infinite;
+}
+
+.tiva-badge.llm-offline .dot {
+    background: #FFB400;
+    box-shadow: 0 0 6px #FFB400;
+}
+
+@keyframes pulse-dot {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50%       { opacity: 0.5; transform: scale(0.8); }
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   SIDEBAR
+   ═══════════════════════════════════════════════════════════════════════════ */
+[data-testid="stSidebar"] {
+    background: linear-gradient(180deg, #0D1B4B 0%, #0A1535 100%) !important;
+    border-right: none !important;
+}
+
+[data-testid="stSidebar"] * {
+    color: rgba(255,255,255,0.9) !important;
+}
+
+[data-testid="stSidebar"] .sidebar-logo {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.4rem 0 1.2rem 0;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
     margin-bottom: 1.2rem;
 }
-.tiva-header h1 {
-    margin: 0 0 0.2rem 0;
-    font-size: 1.75rem;
+
+[data-testid="stSidebar"] .sidebar-logo span {
+    font-size: 1.05rem;
     font-weight: 700;
     letter-spacing: -0.02em;
-}
-.tiva-header p {
-    margin: 0;
-    font-size: 0.95rem;
-    opacity: 0.88;
+    color: white !important;
 }
 
-/* ── metric cards ─────────────────────────────────────────────────────────── */
-.metric-card {
-    background: #ffffff;
-    border: 1px solid #e0e4ea;
-    border-left: 4px solid #003087;
-    border-radius: 6px;
-    padding: 1rem 1.2rem;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
-}
-.metric-card .metric-label {
-    font-size: 0.78rem;
-    color: #6D6E71;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin-bottom: 0.25rem;
-}
-.metric-card .metric-value {
-    font-size: 1.6rem;
+[data-testid="stSidebar"] .sidebar-section {
+    font-size: 0.68rem;
     font-weight: 700;
-    color: #003087;
-    line-height: 1.1;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: rgba(255,255,255,0.4) !important;
+    margin: 1.2rem 0 0.5rem 0;
 }
-.metric-card .metric-sub {
-    font-size: 0.8rem;
-    color: #6D6E71;
-    margin-top: 0.2rem;
-}
-.metric-positive { border-left-color: #0070C0; }
-.metric-negative { border-left-color: #C00000; }
 
-/* ── section headings ─────────────────────────────────────────────────────── */
-.section-title {
-    font-size: 1rem;
+/* selectbox/input styling in sidebar */
+[data-testid="stSidebar"] [data-testid="stSelectbox"] > div > div {
+    background: rgba(255,255,255,0.08) !important;
+    border: 1px solid rgba(255,255,255,0.12) !important;
+    border-radius: 8px !important;
+    color: white !important;
+}
+
+[data-testid="stSidebar"] label {
+    font-size: 0.78rem !important;
+    font-weight: 500 !important;
+    color: rgba(255,255,255,0.65) !important;
+}
+
+[data-testid="stSidebar"] button {
+    width: 100%;
+    background: rgba(255,255,255,0.08) !important;
+    border: 1px solid rgba(255,255,255,0.15) !important;
+    color: rgba(255,255,255,0.8) !important;
+    border-radius: 8px !important;
+    font-size: 0.82rem !important;
+    transition: all 0.2s;
+}
+
+[data-testid="stSidebar"] button:hover {
+    background: rgba(255,255,255,0.15) !important;
+    border-color: rgba(255,255,255,0.3) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   TABS
+   ═══════════════════════════════════════════════════════════════════════════ */
+[data-testid="stTabs"] [role="tablist"] {
+    background: white;
+    border-radius: 12px;
+    padding: 4px;
+    box-shadow: 0 1px 8px rgba(0,0,0,0.06);
+    gap: 2px;
+    border-bottom: none !important;
+    margin-bottom: 1.2rem;
+}
+
+[data-testid="stTabs"] button[role="tab"] {
+    border-radius: 9px !important;
+    font-size: 0.82rem !important;
+    font-weight: 500 !important;
+    color: #6B7280 !important;
+    padding: 0.45rem 1rem !important;
+    transition: all 0.2s !important;
+    border: none !important;
+    background: transparent !important;
+}
+
+[data-testid="stTabs"] button[role="tab"]:hover {
+    color: #003087 !important;
+    background: #F0F4FA !important;
+}
+
+[data-testid="stTabs"] button[role="tab"][aria-selected="true"] {
+    background: linear-gradient(135deg, #003087, #0055A5) !important;
+    color: white !important;
+    font-weight: 600 !important;
+    box-shadow: 0 2px 8px rgba(0,48,135,0.3) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   METRIC CARDS
+   ═══════════════════════════════════════════════════════════════════════════ */
+.metric-card {
+    background: white;
+    border-radius: 14px;
+    padding: 1.2rem 1.4rem;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    border: 1px solid rgba(0,0,0,0.04);
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.metric-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+}
+
+.metric-card::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #003087, #0070C0);
+    border-radius: 14px 14px 0 0;
+}
+
+.metric-card.positive::before { background: linear-gradient(90deg, #0070C0, #00A3E0); }
+.metric-card.negative::before { background: linear-gradient(90deg, #C0392B, #E74C3C); }
+
+.metric-card .mc-icon {
+    font-size: 1.6rem;
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+.metric-card .mc-label {
+    font-size: 0.72rem;
     font-weight: 600;
-    color: #003087;
-    border-bottom: 2px solid #003087;
-    padding-bottom: 0.3rem;
-    margin: 1.2rem 0 0.8rem 0;
+    color: #9CA3AF;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 0.35rem;
 }
 
-/* ── footnote / method note ───────────────────────────────────────────────── */
-.footnote {
+.metric-card .mc-value {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: #0D1B4B;
+    line-height: 1;
+    letter-spacing: -0.03em;
+}
+
+.metric-card .mc-sub {
     font-size: 0.78rem;
-    color: #6D6E71;
-    border-top: 1px solid #e0e4ea;
-    padding-top: 0.5rem;
+    color: #6B7280;
+    margin-top: 0.35rem;
+}
+
+.metric-card .mc-trend-up   { color: #059669; font-size: 0.82rem; font-weight: 600; }
+.metric-card .mc-trend-down { color: #DC2626; font-size: 0.82rem; font-weight: 600; }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   SECTION TITLES
+   ═══════════════════════════════════════════════════════════════════════════ */
+.section-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #0D1B4B;
+    margin: 1.4rem 0 0.9rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.section-title::before {
+    content: "";
+    display: inline-block;
+    width: 3px;
+    height: 1rem;
+    background: linear-gradient(180deg, #003087, #0070C0);
+    border-radius: 2px;
+    flex-shrink: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   CHART CONTAINERS
+   ═══════════════════════════════════════════════════════════════════════════ */
+.chart-card {
+    background: white;
+    border-radius: 14px;
+    padding: 1.2rem;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    border: 1px solid rgba(0,0,0,0.04);
+    margin-bottom: 1rem;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   CHATBOT
+   ═══════════════════════════════════════════════════════════════════════════ */
+.chat-intro {
+    background: linear-gradient(135deg, #F0F4FF 0%, #E8F4FD 100%);
+    border-radius: 16px;
+    padding: 1.6rem 2rem;
+    margin-bottom: 1.2rem;
+    border: 1px solid rgba(0,48,135,0.08);
+}
+
+.chat-intro h3 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #0D1B4B;
+    margin: 0 0 0.4rem 0;
+}
+
+.chat-intro p {
+    font-size: 0.88rem;
+    color: #4B5563;
+    margin: 0;
+    line-height: 1.6;
+}
+
+.sample-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
     margin-top: 1rem;
 }
 
-/* ── chatbot messages ─────────────────────────────────────────────────────── */
-.chat-user {
-    background: #F0F4FA;
-    border-radius: 12px 12px 2px 12px;
-    padding: 0.7rem 1rem;
-    margin: 0.4rem 0;
-    max-width: 80%;
-    margin-left: auto;
-    font-size: 0.92rem;
-}
-.chat-bot {
-    background: #ffffff;
-    border: 1px solid #e0e4ea;
-    border-radius: 12px 12px 12px 2px;
-    padding: 0.7rem 1rem;
-    margin: 0.4rem 0;
-    max-width: 90%;
-    font-size: 0.92rem;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-}
-.chat-bot .bot-label {
-    font-size: 0.72rem;
-    color: #0070C0;
-    font-weight: 600;
-    margin-bottom: 0.3rem;
+.sample-pill {
+    background: white;
+    border: 1.5px solid #DBEAFE;
+    color: #1D4ED8;
+    border-radius: 20px;
+    padding: 0.4rem 0.9rem;
+    font-size: 0.78rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
 }
 
-/* ── filter chip ──────────────────────────────────────────────────────────── */
+.sample-pill:hover {
+    background: #EFF6FF;
+    border-color: #93C5FD;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(29,78,216,0.15);
+}
+
+/* ── message bubbles ──────────────────────────────────────────────────────── */
+[data-testid="stChatMessage"] {
+    background: transparent !important;
+    border: none !important;
+}
+
+[data-testid="stChatMessage"][data-testid*="user"] {
+    flex-direction: row-reverse;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   FILTER CHIPS
+   ═══════════════════════════════════════════════════════════════════════════ */
+.chip-row { margin: 0.5rem 0 1rem 0; }
+
 .filter-chip {
-    display: inline-block;
-    background: #E9F1FA;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    background: white;
     color: #003087;
-    border-radius: 12px;
-    padding: 0.15rem 0.65rem;
-    font-size: 0.78rem;
+    border: 1.5px solid #BFDBFE;
+    border-radius: 20px;
+    padding: 0.2rem 0.65rem;
+    font-size: 0.75rem;
     font-weight: 600;
     margin: 0.15rem;
+    box-shadow: 0 1px 3px rgba(0,48,135,0.08);
 }
 
-/* ── sample question button ───────────────────────────────────────────────── */
-.sample-question {
-    display: inline-block;
-    background: #f7f9fc;
-    border: 1px solid #ccd6e0;
-    border-radius: 20px;
-    padding: 0.35rem 0.9rem;
-    font-size: 0.82rem;
-    color: #003087;
-    margin: 0.2rem;
-    cursor: pointer;
-    transition: background 0.15s;
-}
-.sample-question:hover {
-    background: #E9F1FA;
-}
-
-/* ── info / warning boxes ─────────────────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════════════════════
+   INFO / WARNING BOXES
+   ═══════════════════════════════════════════════════════════════════════════ */
 .info-box {
-    background: #EBF5FB;
-    border-left: 4px solid #0070C0;
-    border-radius: 4px;
-    padding: 0.7rem 1rem;
-    font-size: 0.88rem;
-    color: #1a3a5c;
+    background: linear-gradient(135deg, #EFF6FF, #DBEAFE);
+    border-left: 4px solid #3B82F6;
+    border-radius: 8px;
+    padding: 0.8rem 1.1rem;
+    font-size: 0.86rem;
+    color: #1E3A8A;
     margin: 0.8rem 0;
+    line-height: 1.5;
 }
+
 .warn-box {
-    background: #FEF9E7;
-    border-left: 4px solid #F39C12;
-    border-radius: 4px;
-    padding: 0.7rem 1rem;
-    font-size: 0.88rem;
-    color: #5D4037;
+    background: linear-gradient(135deg, #FFFBEB, #FEF3C7);
+    border-left: 4px solid #F59E0B;
+    border-radius: 8px;
+    padding: 0.8rem 1.1rem;
+    font-size: 0.86rem;
+    color: #78350F;
     margin: 0.8rem 0;
+    line-height: 1.5;
 }
 
-/* ── table styling ────────────────────────────────────────────────────────── */
-.dataframe thead th {
-    background-color: #003087 !important;
+/* ═══════════════════════════════════════════════════════════════════════════
+   DATAFRAME TABLE
+   ═══════════════════════════════════════════════════════════════════════════ */
+[data-testid="stDataFrame"] {
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   BUTTONS
+   ═══════════════════════════════════════════════════════════════════════════ */
+.stDownloadButton > button, .stButton > button {
+    border-radius: 8px !important;
+    font-weight: 600 !important;
+    font-size: 0.82rem !important;
+    transition: all 0.2s !important;
+}
+
+.stDownloadButton > button {
+    background: linear-gradient(135deg, #003087, #0055A5) !important;
     color: white !important;
-    font-weight: 600;
-    font-size: 0.82rem;
-}
-.dataframe tbody tr:nth-child(even) {
-    background-color: #f7f9fc;
+    border: none !important;
+    padding: 0.45rem 1.2rem !important;
+    box-shadow: 0 2px 8px rgba(0,48,135,0.25) !important;
 }
 
-/* ── sidebar ──────────────────────────────────────────────────────────────── */
-[data-testid="stSidebar"] {
-    background-color: #f7f9fc;
-    border-right: 1px solid #e0e4ea;
+.stDownloadButton > button:hover {
+    box-shadow: 0 4px 14px rgba(0,48,135,0.35) !important;
+    transform: translateY(-1px) !important;
 }
-[data-testid="stSidebar"] .sidebar-title {
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: #003087;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    margin-bottom: 0.5rem;
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   FOOTNOTE
+   ═══════════════════════════════════════════════════════════════════════════ */
+.footnote {
+    font-size: 0.76rem;
+    color: #9CA3AF;
+    border-top: 1px solid #E5E7EB;
+    padding-top: 0.6rem;
+    margin-top: 1.2rem;
+    line-height: 1.6;
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   EXPANDER
+   ═══════════════════════════════════════════════════════════════════════════ */
+[data-testid="stExpander"] {
+    border: 1px solid #E5E7EB !important;
+    border-radius: 10px !important;
+    box-shadow: none !important;
+}
+
+[data-testid="stExpander"] summary {
+    font-size: 0.84rem !important;
+    font-weight: 600 !important;
+    color: #374151 !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   SCROLLBAR
+   ═══════════════════════════════════════════════════════════════════════════ */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #F3F4F6; border-radius: 10px; }
+::-webkit-scrollbar-thumb { background: #D1D5DB; border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: #9CA3AF; }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   SPINNER / LOADING
+   ═══════════════════════════════════════════════════════════════════════════ */
+[data-testid="stSpinner"] { color: #003087 !important; }
