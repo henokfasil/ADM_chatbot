@@ -384,13 +384,14 @@ def llm_explain(prompt: str) -> str:
     load_dotenv(_base / ".env.example", override=False)
 
     import os
+    # Priority: HuggingFace (open-source inference) -> Grok -> Gemini
     candidates = []
-    if os.getenv("GEMINI_API_KEY"):
-        candidates.append(("gemini",      os.getenv("GEMINI_API_KEY"),      os.getenv("GEMINI_MODEL", "gemini-2.5-flash")))
-    if os.getenv("GROK_API_KEY"):
-        candidates.append(("grok",         os.getenv("GROK_API_KEY"),        os.getenv("GROK_MODEL",   "grok-3-mini")))
     if os.getenv("HUGGINGFACE_API_KEY"):
         candidates.append(("huggingface",  os.getenv("HUGGINGFACE_API_KEY"), os.getenv("HF_MODEL",     "Qwen/Qwen2.5-72B-Instruct")))
+    if os.getenv("GROK_API_KEY"):
+        candidates.append(("grok",         os.getenv("GROK_API_KEY"),        os.getenv("GROK_MODEL",   "grok-3-mini")))
+    if os.getenv("GEMINI_API_KEY"):
+        candidates.append(("gemini",       os.getenv("GEMINI_API_KEY"),      os.getenv("GEMINI_MODEL", "gemini-2.5-flash")))
 
     dispatch = {"gemini": _call_gemini, "grok": _call_grok, "huggingface": _call_huggingface}
 

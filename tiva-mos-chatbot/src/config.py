@@ -24,19 +24,19 @@ HF_MODEL = os.getenv("HF_MODEL", "Qwen/Qwen2.5-72B-Instruct")
 
 def active_llm_provider() -> tuple[str, str, str] | tuple[None, None, None]:
     """Return (provider_name, api_key, model) for first available key.
+    Priority: HuggingFace -> Grok -> Gemini.
     Reads env vars at call time so hot-adding a key works without restart."""
-    # Re-run dotenv on every call so keys added after startup are picked up
     load_dotenv(_base / ".env", override=False)
     load_dotenv(_base / ".env.example", override=False)
-    key_g = os.getenv("GEMINI_API_KEY", "")
-    key_x = os.getenv("GROK_API_KEY", "")
     key_h = os.getenv("HUGGINGFACE_API_KEY", "")
-    if key_g:
-        return "gemini", key_g, os.getenv("GEMINI_MODEL", GEMINI_MODEL)
-    if key_x:
-        return "grok", key_x, os.getenv("GROK_MODEL", GROK_MODEL)
+    key_x = os.getenv("GROK_API_KEY", "")
+    key_g = os.getenv("GEMINI_API_KEY", "")
     if key_h:
         return "huggingface", key_h, os.getenv("HF_MODEL", HF_MODEL)
+    if key_x:
+        return "grok", key_x, os.getenv("GROK_MODEL", GROK_MODEL)
+    if key_g:
+        return "gemini", key_g, os.getenv("GEMINI_MODEL", GEMINI_MODEL)
     return None, None, None
 
 # ── Dataset descriptors ────────────────────────────────────────────────────────
