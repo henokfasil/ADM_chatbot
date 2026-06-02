@@ -604,10 +604,23 @@ html, body, [class*="css"], .stApp {
     box-shadow: 0 6px 28px rgba(0, 48, 135, 0.16) !important;
 }
 
-/* text input inside the form */
-[data-testid="stForm"] input[type="text"] {
+/* text input inside the form — kill ALL default Streamlit borders and focus rings */
+[data-testid="stForm"] input[type="text"],
+[data-testid="stForm"] input[type="text"]:focus,
+[data-testid="stForm"] input[type="text"]:active,
+[data-testid="stForm"] [data-baseweb="base-input"],
+[data-testid="stForm"] [data-baseweb="base-input"]:focus-within,
+[data-testid="stForm"] [data-baseweb="input"],
+[data-testid="stForm"] [data-baseweb="input"]:focus-within {
+    border: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+    background: transparent !important;
+}
+
+[data-testid="stForm"] textarea {
     font-family: 'Inter', sans-serif !important;
-    font-size: 0.95rem !important;
+    font-size: 0.92rem !important;
     color: #1F2937 !important;
     background: transparent !important;
     border: none !important;
@@ -615,15 +628,17 @@ html, body, [class*="css"], .stApp {
     outline: none !important;
     box-shadow: none !important;
     padding: 0.55rem 0.4rem !important;
-    height: 46px !important;
+    resize: none !important;
+    line-height: 1.5 !important;
 }
 
-[data-testid="stForm"] input[type="text"]:focus {
+[data-testid="stForm"] textarea:focus {
     border: none !important;
     box-shadow: none !important;
     outline: none !important;
 }
 
+[data-testid="stForm"] textarea::placeholder,
 [data-testid="stForm"] input::placeholder {
     color: #9CA3AF !important;
     font-style: italic !important;
