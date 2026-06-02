@@ -463,24 +463,55 @@ with tabs[0]:
                 st.markdown(f"**{turn['question']}**")
             with st.chat_message("assistant", avatar="assistant"):
                 st.markdown(turn["answer"])
-                if turn.get("df") is not None and not turn["df"].empty:
+
+                df_turn = turn.get("df")
+                plan    = turn.get("plan")
+
+                # ── chart first ───────────────────────────────────────────
+                if df_turn is not None and not df_turn.empty and plan:
+                    _ds = plan.dataset_name or "dmst_va_in_frgn_dmnd"
+                    _fig = None
+
+                    if plan.intent == "top_n" and "country_name" in df_turn.columns:
+                        _fig = plot_top_n_bar(df_turn, dataset_name=_ds)
+
+                    elif plan.intent == "sector" and "sector_name" in df_turn.columns:
+                        _fig = plot_sector_ranking(df_turn)
+
+                    elif plan.intent == "mode_shares" and "mode_name" in df_turn.columns:
+                        _fig = plot_stacked_bar(
+                            df_turn, x="mode_name", y="value",
+                            color="mode_name", dataset_name=_ds,
+                            title="Mode breakdown"
+                        )
+
+                    elif plan.intent in ("time_series", "growth") and "year" in df_turn.columns:
+                        _color = (
+                            "mode_name"    if "mode_name"    in df_turn.columns else
+                            "country_name" if "country_name" in df_turn.columns else
+                            None
+                        )
+                        _fig = plot_time_series(df_turn, color=_color, dataset_name=_ds)
+
+                    elif plan.intent == "compare" and "year" in df_turn.columns:
+                        _fig = plot_time_series(
+                            df_turn, color="country_name", dataset_name=_ds,
+                            title="Country comparison"
+                        )
+
+                    if _fig:
+                        st.plotly_chart(_fig, use_container_width=True,
+                                        key=f"chart_{turn['id']}")
+
+                # ── data table (collapsed) ────────────────────────────────
+                if df_turn is not None and not df_turn.empty:
                     with st.expander("View data table"):
                         render_table_with_download(
-                            turn["df"],
+                            df_turn,
                             key=f"cdl_{turn['id']}",
                             filename="chat_result.csv",
                         )
-                if turn.get("plan"):
-                    p = turn["plan"]
-                    with st.expander("Query assumptions"):
-                        st.json({
-                            "intent":  p.intent,
-                            "dataset": p.dataset_name,
-                            "geo":     p.geo,
-                            "mode":    p.mode_name,
-                            "sector":  p.isic_code,
-                            "year":    p.year,
-                        })
+
         # clear button
         if st.button("Clear conversation", key="clear_chat"):
             st.session_state.chat_history = []
