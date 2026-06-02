@@ -367,10 +367,16 @@ def _call_grok(prompt: str, api_key: str, model: str) -> str:
 def _call_huggingface(prompt: str, api_key: str, model: str) -> str:
     try:
         from huggingface_hub import InferenceClient
-        client = InferenceClient(model=model, token=api_key)
-        full_prompt = f"{SYSTEM_PROMPT}\n\nUser: {prompt}\nAssistant:"
-        resp = client.text_generation(full_prompt, max_new_tokens=512, temperature=0.3)
-        return resp.strip()
+        client = InferenceClient(token=api_key)
+        resp = client.chat.completions.create(
+            model=model,
+            messages=[
+                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "user",   "content": prompt},
+            ],
+            temperature=0.3,
+        )
+        return resp.choices[0].message.content.strip()
     except Exception as exc:
         log.warning("HuggingFace error: %s", exc)
         return ""
