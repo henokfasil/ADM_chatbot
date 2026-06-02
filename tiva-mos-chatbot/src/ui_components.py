@@ -65,6 +65,56 @@ def render_header() -> None:
 
 
 # ── sidebar ───────────────────────────────────────────────────────────────────
+def render_inline_filters() -> dict:
+    """Compact filter bar rendered inside the dashboard column."""
+    dataset_opts = {
+        f"{_DS_ICONS.get(k, '')}  {DATASETS[k]['label']}": k
+        for k in get_datasets()
+    }
+    ds_label = st.selectbox("Dataset", list(dataset_opts.keys()),
+                            key="if_dataset", label_visibility="visible")
+    dataset_name = dataset_opts[ds_label]
+
+    c1, c2 = st.columns(2)
+    with c1:
+        years = get_years(dataset_name) or [2000, 2023]
+        year = st.selectbox("Year", sorted(years, reverse=True), key="if_year")
+    with c2:
+        geo_opts = {ISO3_NAMES.get(g, g): g for g in get_available_values("geo")}
+        geo_label = st.selectbox(
+            "Economy", ["All economies"] + sorted(geo_opts.keys()), key="if_geo"
+        )
+        geo = geo_opts.get(geo_label) if geo_label != "All economies" else None
+
+    c3, c4 = st.columns(2)
+    with c3:
+        mode_opts = get_available_values("mode_name", dataset_name)
+        mode_raw = st.selectbox("Mode", ["All modes"] + mode_opts, key="if_mode")
+        mode_name = mode_raw if mode_raw != "All modes" else None
+    with c4:
+        isic_opts = {ISIC_NAMES.get(i, i): i for i in get_available_values("isic_code") if i}
+        if isic_opts:
+            isic_label = st.selectbox(
+                "Sector", ["All sectors"] + sorted(isic_opts.keys()), key="if_isic"
+            )
+            isic_code = isic_opts.get(isic_label) if isic_label != "All sectors" else None
+        else:
+            isic_code = None
+
+    if st.button("Reset filters", key="if_reset", use_container_width=True):
+        for k in ["if_dataset", "if_year", "if_geo", "if_mode", "if_isic"]:
+            st.session_state.pop(k, None)
+        st.rerun()
+
+    return {
+        "dataset_name": dataset_name,
+        "year": year,
+        "geo": geo,
+        "mode_name": mode_name,
+        "isic_code": isic_code,
+    }
+
+
 def render_sidebar() -> dict:
     with st.sidebar:
         st.markdown("""

@@ -387,6 +387,41 @@ html, body, [class*="css"], .stApp {
     box-shadow: 0 2px 8px rgba(29,78,216,0.15);
 }
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   SPLIT LAYOUT
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Left column (chatbot) — subtle right border separator */
+[data-testid="stHorizontalBlock"] > [data-testid="stColumn"]:first-child {
+    border-right: 1px solid #E5E7EB;
+    padding-right: 1.5rem !important;
+}
+
+/* Right column (dashboard) — a touch of breathing room */
+[data-testid="stHorizontalBlock"] > [data-testid="stColumn"]:last-child {
+    padding-left: 1rem !important;
+}
+
+/* Sample question buttons in chatbot column — pill style */
+[data-testid="stColumn"]:first-child [data-testid="stButton"] button {
+    background: white !important;
+    border: 1.5px solid #DBEAFE !important;
+    color: #1D4ED8 !important;
+    border-radius: 20px !important;
+    font-size: 0.8rem !important;
+    font-weight: 500 !important;
+    padding: 0.35rem 0.8rem !important;
+    transition: all 0.15s !important;
+    text-align: left !important;
+}
+
+[data-testid="stColumn"]:first-child [data-testid="stButton"] button:hover {
+    background: #EFF6FF !important;
+    border-color: #93C5FD !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 2px 8px rgba(29,78,216,0.12) !important;
+}
+
 /* ── message bubbles ──────────────────────────────────────────────────────── */
 [data-testid="stChatMessage"] {
     background: transparent !important;
