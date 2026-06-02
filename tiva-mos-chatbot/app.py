@@ -112,32 +112,7 @@ with col_chat:
         })
         st.rerun()
 
-    # ── sample question chips ───────────────────────────────────────────────
-    st.markdown("""
-    <p style="font-size:0.7rem;font-weight:700;color:#9CA3AF;
-              text-transform:uppercase;letter-spacing:0.07em;
-              margin:0.6rem 0 0.4rem 0;">Try!</p>
-    """, unsafe_allow_html=True)
-
-    sample_qs = [
-        "What kind of info can I get?",
-        "Top 10 Mode 3 economies 2023",
-        "Mode shares for France",
-        "Highest Mode 3 sectors",
-        "Compare DEU, FRA, ITA",
-        "What is Mode 3?",
-    ]
-    sc1, sc2 = st.columns(2)
-    for i, q in enumerate(sample_qs):
-        col = sc1 if i % 2 == 0 else sc2
-        if col.button(q, key=f"sq_{i}", use_container_width=True):
-            st.session_state["chat_input"] = q
-            st.rerun()
-
-    st.markdown("<hr style='margin:0.8rem 0;border-color:#E5E7EB;'>",
-                unsafe_allow_html=True)
-
-    # ── chat history ────────────────────────────────────────────────────────
+    # ── chat history (BEFORE sample questions) ─────────────────────────────
     if not st.session_state.chat_history:
         st.markdown("""
         <div style="text-align:center;padding:1.5rem 0.5rem;color:#9CA3AF;">
@@ -205,48 +180,65 @@ with col_chat:
             st.session_state.chat_history = []
             st.rerun()
 
+    # ── sample questions (AFTER chat history) ──────────────────────────────
+    st.markdown("<hr style='margin:0.8rem 0;border-color:#E5E7EB;'>",
+                unsafe_allow_html=True)
+    st.markdown("""
+    <p style="font-size:0.7rem;font-weight:700;color:#9CA3AF;
+              text-transform:uppercase;letter-spacing:0.07em;
+              margin:0 0 0.5rem 0;">Try asking:</p>
+    """, unsafe_allow_html=True)
+    sample_qs = [
+        "What kind of info can I get?",
+        "Top 10 Mode 3 economies 2023",
+        "Mode shares for France",
+        "Highest Mode 3 sectors",
+        "Compare DEU, FRA, ITA",
+        "What is Mode 3?",
+    ]
+    sc1, sc2 = st.columns(2)
+    for i, q in enumerate(sample_qs):
+        col = sc1 if i % 2 == 0 else sc2
+        if col.button(q, key=f"sq_{i}", use_container_width=True):
+            st.session_state["chat_input"] = q
+            st.rerun()
+
 
 # ══════════════════════════════════════════════════════════════════════════
 # RIGHT — TiVA-MoS Dashboard (75%)
 # ══════════════════════════════════════════════════════════════════════════
 with col_dash:
 
-    # Dashboard title
-    st.markdown("""
-    <div style="display:flex;align-items:center;gap:0.8rem;
-                padding:0.4rem 0 0.8rem 0;
-                border-bottom:2px solid #003087;margin-bottom:0.9rem;">
-      <span style="font-size:1rem;font-weight:700;color:#0D1B4B;">
-        TiVA-MoS Dashboard
-      </span>
-    </div>
-    """, unsafe_allow_html=True)
+    # Dashboard: tabs main area (left 80%) + vertical filters (right 20%)
+    dash_main, dash_filt = st.columns([4, 1], gap="medium")
 
-    # ── horizontal filter row ───────────────────────────────────────────────
-    f0, f1, f2, f3, f4 = st.columns(5)
+    # ── vertical filter panel (right) ───────────────────────────────────────
+    with dash_filt:
+        st.markdown("""
+        <div style="background:#F8FAFC;border:1px solid #E5E7EB;border-radius:12px;
+                    padding:1rem 0.9rem;">
+          <p style="font-size:0.68rem;font-weight:700;color:#9CA3AF;
+                    text-transform:uppercase;letter-spacing:0.08em;margin:0 0 0.8rem 0;">
+            Filters
+          </p>
+        """, unsafe_allow_html=True)
 
-    with f0:
         ds_opts = {DATASETS[k]["label"]: k for k in DATASETS}
-        ds_label = st.selectbox("Dataset", list(ds_opts.keys()),
-                                key="ds_sel", label_visibility="visible")
+        ds_label = st.selectbox("Dataset", list(ds_opts.keys()), key="ds_sel")
         ds = ds_opts[ds_label]
 
-    with f1:
         years = get_years(ds) or [2000, 2023]
         yr = st.selectbox("Year", sorted(years, reverse=True), key="yr_sel")
 
-    with f2:
-        mode_opts = get_available_values("mode_name", ds)
-        mode_raw = st.selectbox("Mode", ["All"] + mode_opts, key="mode_sel")
-        mode = mode_raw if mode_raw != "All" else None
-
-    with f3:
         geo_opts = {ISO3_NAMES.get(g, g): g for g in get_available_values("geo")}
         geo_label = st.selectbox("Economy", ["All"] + sorted(geo_opts.keys()),
                                  key="geo_sel")
         geo = geo_opts.get(geo_label) if geo_label != "All" else None
 
-    with f4:
+        mode_opts = get_available_values("mode_name", ds)
+        mode_raw = st.selectbox("Mode", ["All"] + mode_opts, key="mode_sel")
+        mode = mode_raw if mode_raw != "All" else None
+
         isic_opts = {ISIC_NAMES.get(i, i): i for i in get_available_values("isic_code") if i}
         if isic_opts:
             isic_label = st.selectbox("Sector", ["All"] + sorted(isic_opts.keys()),
@@ -255,26 +247,33 @@ with col_dash:
         else:
             isic = None
 
-    # Reset button (compact, inline)
-    if st.button("Reset filters", key="dash_reset"):
-        for k in ["ds_sel", "yr_sel", "mode_sel", "geo_sel", "isic_sel"]:
-            st.session_state.pop(k, None)
-        st.rerun()
+        st.markdown("</div>", unsafe_allow_html=True)
+
+        if st.button("Reset", key="dash_reset", use_container_width=True):
+            for k in ["ds_sel", "yr_sel", "mode_sel", "geo_sel", "isic_sel"]:
+                st.session_state.pop(k, None)
+            st.rerun()
 
     filters = {"dataset_name": ds, "year": yr, "geo": geo,
                "mode_name": mode, "isic_code": isic}
-
     active_filters: dict = {"dataset_name": ds}
     if geo:  active_filters["geo"]       = geo
     if mode: active_filters["mode_name"] = mode
     if isic: active_filters["isic_code"] = isic
     if yr:   active_filters["year"]      = yr
 
-    st.markdown("<hr style='margin:0.5rem 0 1rem 0;border-color:#E5E7EB;'>",
-                unsafe_allow_html=True)
+    # ── dashboard tabs (left main area) ────────────────────────────────────
+    with dash_main:
+      st.markdown("""
+      <div style="border-bottom:2px solid #003087;padding-bottom:0.4rem;
+                  margin-bottom:0.8rem;">
+        <span style="font-size:1rem;font-weight:700;color:#0D1B4B;">
+          TiVA-MoS Dashboard
+        </span>
+      </div>
+      """, unsafe_allow_html=True)
 
-    # ── dashboard tabs ──────────────────────────────────────────────────────
-    tabs = st.tabs([
+      tabs = st.tabs([
         "Exec. Summary",
         "Indicator Explorer",
         "Country Comparison",

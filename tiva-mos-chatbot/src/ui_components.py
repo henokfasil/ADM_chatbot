@@ -48,7 +48,7 @@ def render_header() -> None:
     <div class="tiva-header">
       <div class="tiva-header-inner">
         <div>
-          <h1>TiVA-MoS Explorer</h1>
+          <h1>TiVA-MoS Chat &amp; Vizboard</h1>
           <p class="tagline">
             Trade in Value-Added &nbsp;·&nbsp; Modes of Supply &nbsp;·&nbsp;
             OECD 2026 Preliminary Release
@@ -120,7 +120,7 @@ def render_sidebar() -> dict:
     with st.sidebar:
         st.markdown("""
         <div class="sidebar-logo">
-          <span>&#9889; TiVA-MoS Explorer</span>
+          <span>&#9889; TiVA-MoS Chat &amp; Vizboard</span>
         </div>
         """, unsafe_allow_html=True)
 
