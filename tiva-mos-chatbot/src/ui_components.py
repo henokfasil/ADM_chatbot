@@ -55,7 +55,7 @@ def render_header() -> None:
         </div>
         <div class="header-badges">
           <span class="tiva-badge">82 Economies</span>
-          <span class="tiva-badge">2000 – 2023</span>
+          <span class="tiva-badge">2000 &ndash; 2023</span>
           <span class="tiva-badge">5 Indicators</span>
           {llm_html}
         </div>
@@ -107,14 +107,15 @@ def render_sidebar() -> dict:
             isic_code = None
 
         st.markdown("<br>", unsafe_allow_html=True)
-        if st.button("↺  Reset all filters", key="sb_reset"):
+        if st.button("Reset all filters", key="sb_reset"):
             for k in ["sb_dataset", "sb_year", "sb_geo", "sb_mode", "sb_isic"]:
                 st.session_state.pop(k, None)
             st.rerun()
 
         st.markdown("""
-        <div style="position:absolute;bottom:1.2rem;left:1.2rem;right:1.2rem;
-                    font-size:0.68rem;color:rgba(255,255,255,0.3);line-height:1.5;">
+        <div style="margin-top:2rem;padding-top:1rem;
+                    border-top:1px solid rgba(255,255,255,0.1);
+                    font-size:0.68rem;color:rgba(255,255,255,0.3);line-height:1.6;">
           Source: OECD TiVA-MoS<br>2026 Preliminary Release
         </div>
         """, unsafe_allow_html=True)
