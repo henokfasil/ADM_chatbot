@@ -40,6 +40,49 @@ st.set_page_config(
 
 inject_css()
 
+# ── password gate ──────────────────────────────────────────────────────────
+def _check_password() -> bool:
+    import os
+    from dotenv import load_dotenv
+    _base = Path(__file__).parent
+    load_dotenv(_base / ".env", override=False)
+    load_dotenv(_base.parent / "tiva-mos-chatbot" / ".env", override=False)
+
+    correct = os.getenv("APP_PASSWORD", "")
+    if not correct:
+        return True   # no password set → open access
+
+    if st.session_state.get("authenticated"):
+        return True
+
+    st.markdown("""
+    <div style="max-width:420px;margin:6rem auto;padding:2.5rem;
+                background:white;border-radius:16px;
+                box-shadow:0 8px 32px rgba(0,48,135,0.12);
+                border-top:4px solid #003087;text-align:center;">
+      <div style="font-size:1.6rem;font-weight:800;color:#0D1B4B;
+                  margin-bottom:0.3rem;">TiVA-MoS AI Analyst</div>
+      <div style="font-size:0.85rem;color:#6B7280;margin-bottom:1.8rem;">
+        OECD Trade in Value-Added &middot; Restricted Access
+      </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    col = st.columns([1, 2, 1])[1]
+    pwd = col.text_input("Password", type="password",
+                         placeholder="Enter access password",
+                         label_visibility="collapsed")
+    if col.button("Enter", use_container_width=True):
+        if pwd == correct:
+            st.session_state["authenticated"] = True
+            st.rerun()
+        else:
+            col.error("Incorrect password. Please try again.")
+    return False
+
+if not _check_password():
+    st.stop()
+
 # ── load data ──────────────────────────────────────────────────────────────
 @st.cache_data(show_spinner="Loading TiVA-MoS data...")
 def _load():
