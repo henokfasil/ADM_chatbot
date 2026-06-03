@@ -165,13 +165,16 @@ def render_executive_summary(filters: dict) -> None:
     if growth and growth["pct_change"] is not None:
         chg = f"{growth['pct_change']:+.1f}% ({growth['first_year']} to {growth['last_year']})"
 
-    cards = "".join([
-        _metric_card("Indicator", DATASETS[ds]["label"], DATASETS[ds]["unit"]),
-        _metric_card("Economy", ISO3_NAMES.get(geo, geo) if geo else f"{n_eco} economies"),
-        _metric_card("Latest value (avg)", f"{latest:.2f}", DATASETS[ds]["unit"]),
-        _metric_card("Change", chg or "N/A"),
-    ])
-    st.markdown(f'<div class="metric-row">{cards}</div>', unsafe_allow_html=True)
+    mc1, mc2, mc3, mc4 = st.columns(4)
+    mc1.markdown(_metric_card("Indicator", DATASETS[ds]["label"], DATASETS[ds]["unit"]),
+                 unsafe_allow_html=True)
+    mc2.markdown(_metric_card("Economy",
+                               ISO3_NAMES.get(geo, geo) if geo else f"{n_eco} economies"),
+                 unsafe_allow_html=True)
+    mc3.markdown(_metric_card("Latest value (avg)", f"{latest:.2f}", DATASETS[ds]["unit"]),
+                 unsafe_allow_html=True)
+    mc4.markdown(_metric_card("Change", chg or "N/A"),
+                 unsafe_allow_html=True)
     st.markdown("")
 
     c1, c2 = st.columns(2)

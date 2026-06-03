@@ -426,6 +426,29 @@ html, body, [class*="css"], .stApp {
     text-transform: uppercase !important;
     letter-spacing: 0.06em !important;
 }
+
+/* Selectbox in dark sidebar — make background transparent, text white */
+[data-testid="stSidebar"] [data-testid="stSelectbox"] > div > div {
+    background: rgba(255,255,255,0.08) !important;
+    border: 1px solid rgba(255,255,255,0.15) !important;
+    border-radius: 8px !important;
+    color: white !important;
+}
+[data-testid="stSidebar"] [data-testid="stSelectbox"] > div > div > div {
+    color: white !important;
+}
+[data-testid="stSidebar"] [data-testid="stSelectbox"] svg {
+    fill: rgba(255,255,255,0.6) !important;
+}
+/* Dropdown options list */
+[data-testid="stSidebar"] li,
+[data-testid="stSidebar"] [role="option"] {
+    background: #0D1B4B !important;
+    color: white !important;
+}
+[data-testid="stSidebar"] [role="option"]:hover {
+    background: rgba(255,255,255,0.12) !important;
+}
 [data-testid="stSidebar"] .sidebar-logo {
     font-size: 0.9rem;
     font-weight: 700;
