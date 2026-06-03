@@ -55,29 +55,20 @@ def _check_password() -> bool:
     if st.session_state.get("authenticated"):
         return True
 
-    st.markdown("""
-    <div style="max-width:420px;margin:6rem auto;padding:2.5rem;
-                background:white;border-radius:16px;
-                box-shadow:0 8px 32px rgba(0,48,135,0.12);
-                border-top:4px solid #003087;text-align:center;">
-      <div style="font-size:1.6rem;font-weight:800;color:#0D1B4B;
-                  margin-bottom:0.3rem;">TiVA-MoS AI Analyst</div>
-      <div style="font-size:0.85rem;color:#6B7280;margin-bottom:1.8rem;">
-        OECD Trade in Value-Added &middot; Restricted Access
-      </div>
-    </div>
-    """, unsafe_allow_html=True)
-
-    col = st.columns([1, 2, 1])[1]
-    pwd = col.text_input("Password", type="password",
-                         placeholder="Enter access password",
-                         label_visibility="collapsed")
-    if col.button("Enter", use_container_width=True):
-        if pwd == correct:
-            st.session_state["authenticated"] = True
-            st.rerun()
-        else:
-            col.error("Incorrect password. Please try again.")
+    # ── clean login screen — plain Streamlit only, no HTML overlay ─────────
+    _, mid, _ = st.columns([1, 1, 1])
+    with mid:
+        st.markdown("## TiVA-MoS AI Analyst")
+        st.caption("OECD Trade in Value-Added · Restricted Access")
+        st.markdown("---")
+        pwd = st.text_input("Password", type="password",
+                            placeholder="Enter access password")
+        if st.button("Enter", use_container_width=True, type="primary"):
+            if pwd == correct:
+                st.session_state["authenticated"] = True
+                st.rerun()
+            else:
+                st.error("Incorrect password.")
     return False
 
 if not _check_password():
