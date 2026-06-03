@@ -77,7 +77,13 @@ def _render_follow_up(questions: list[str], history_key: str) -> None:
                 unsafe_allow_html=True)
     for i, q in enumerate(questions[:3]):
         if st.button(q, key=f"fu_{history_key}_{i}", use_container_width=False):
-            st.session_state["ai_question"] = q
+            with st.spinner("AI Analyst is working..."):
+                _resp = analyse(q)
+            st.session_state.analyst_history.insert(0, {
+                "id":       len(st.session_state.analyst_history),
+                "question": q,
+                "response": _resp,
+            })
             st.rerun()
 
 
@@ -153,7 +159,13 @@ def render_ai_analyst_tab() -> None:
             for prompt in prompts:
                 if st.button(prompt, key=f"pg_{hash(prompt)}",
                              use_container_width=True):
-                    st.session_state["ai_question"] = prompt
+                    with st.spinner("AI Analyst is working..."):
+                        _resp = analyse(prompt)
+                    st.session_state.analyst_history.insert(0, {
+                        "id":       len(st.session_state.analyst_history),
+                        "question": prompt,
+                        "response": _resp,
+                    })
                     st.rerun()
 
         if st.session_state.analyst_history:
