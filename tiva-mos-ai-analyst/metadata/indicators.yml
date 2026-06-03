@@ -1,0 +1,149 @@
+indicators:
+
+  dmst_va_in_frgn_dmnd:
+    code: "DVAFFD"
+    name: "Domestic VA in Foreign Demand"
+    short_definition: >
+      Share of a country's domestic value added that is embodied in foreign final
+      demand, decomposed by GATS mode of supply.
+    long_definition: >
+      This indicator measures the share of domestic value added (DVA) that ends up
+      being consumed by foreign final demand, broken down by the mode through which
+      services are delivered internationally (Mode 1/4 cross-border, Mode 2
+      consumption abroad, Mode 3 commercial presence). It captures how domestic
+      production reaches foreign markets via different modes.
+    unit: "% of total services exports"
+    valid_years: [2000, 2023]
+    modes: ["Mode 1/4", "Mode 2", "Mode 3"]
+    has_sectors: false
+    caveats: >
+      Mode 3 and cross-border supply should not be directly summed as they may
+      overlap in some accounting frameworks. Only two time points available
+      (2000 and 2023) in this release.
+    synonyms:
+      - "domestic value added"
+      - "DVA"
+      - "services exports by mode"
+      - "domestic content of exports"
+      - "value added in foreign demand"
+    policy_context: >
+      A rising Mode 3 share indicates growing importance of commercial presence
+      (foreign affiliates) in delivering services internationally, which has
+      implications for investment-related trade policy and GATS commitments.
+
+  frgn_va_in_dmst_dmnd:
+    code: "FVADD"
+    name: "Foreign VA in Domestic Demand"
+    short_definition: >
+      Share of foreign value added in domestic final demand, decomposed by mode
+      of supply.
+    long_definition: >
+      This indicator measures how much of domestic final demand is met by foreign
+      value added, and through which GATS mode. It captures the import penetration
+      of services through different delivery channels.
+    unit: "% of total services imports"
+    valid_years: [2000, 2023]
+    modes: ["Mode 1/4", "Mode 2", "Mode 3"]
+    has_sectors: false
+    caveats: >
+      Only two time points available. Interpretation differs from gross imports.
+    synonyms:
+      - "foreign value added"
+      - "FVA"
+      - "services imports by mode"
+      - "foreign content of domestic demand"
+      - "import penetration"
+    policy_context: >
+      A high Mode 3 share in foreign VA suggests domestic demand is met largely
+      by foreign firms operating locally (e.g. foreign bank branches, retail chains).
+
+  gvc_participation:
+    code: "GVCPART"
+    name: "GVC Participation"
+    short_definition: >
+      Global value chain participation index decomposed into backward and forward
+      linkages, each split between cross-border trade and Mode 3.
+    long_definition: >
+      GVC participation measures the extent to which a country is integrated into
+      global value chains, decomposed into: backward participation (foreign VA in
+      exports) and forward participation (domestic VA in partners' exports), each
+      further split between cross-border delivery and Mode 3 commercial presence.
+    unit: "% of gross exports"
+    valid_years: [2000, 2023]
+    modes: ["Backward (Cross-border)", "Backward (Mode 3)", "Forward (Cross-border)", "Forward (Mode 3)"]
+    has_sectors: false
+    caveats: >
+      Backward and forward linkages measure different aspects of GVC integration.
+      Cross-border and Mode 3 components should not be added within each direction.
+    synonyms:
+      - "GVC"
+      - "global value chain"
+      - "backward linkage"
+      - "forward linkage"
+      - "value chain integration"
+      - "supply chain participation"
+    policy_context: >
+      High backward GVC participation via Mode 3 suggests the economy imports
+      services inputs through foreign affiliates. High forward participation
+      indicates domestic services are inputs into foreign production.
+
+  va_in_mnf_export:
+    code: "VAMFG"
+    name: "VA in Manufacturing Export"
+    short_definition: >
+      Value-added content of manufacturing exports decomposed into domestic
+      content, foreign content via cross-border, and foreign content via Mode 3.
+    long_definition: >
+      This indicator decomposes the value-added content of manufacturing exports
+      into three components: domestic content (DVA), foreign content delivered
+      cross-border (Mode 1/4), and foreign content from foreign affiliates
+      (Mode 3). It shows how much services value added embedded in manufacturing
+      exports comes from domestic vs. foreign sources and by which mode.
+    unit: "% of manufacturing exports"
+    valid_years: [2000, 2023]
+    modes: ["Domestic content", "Foreign content (Mode 1/4)", "Foreign content (Mode 3)"]
+    has_sectors: false
+    caveats: >
+      This indicator applies to manufacturing exports specifically.
+      Services are embedded inputs, not direct exports.
+    synonyms:
+      - "manufacturing exports"
+      - "VA in manufacturing"
+      - "services in manufacturing"
+      - "embedded services"
+      - "servitisation"
+    policy_context: >
+      A growing share of foreign Mode 3 content in manufacturing exports suggests
+      servicification of manufacturing and reliance on foreign affiliate services.
+
+  mos3_to_xborder_ratio:
+    code: "M3RATIO"
+    name: "Mode 3 to Cross-border Ratio"
+    short_definition: >
+      Ratio of Mode 3 (commercial presence) services trade to cross-border
+      services trade, by ISIC sector.
+    long_definition: >
+      For each ISIC sector, this indicator shows the ratio of Mode 3 (commercial
+      presence / foreign affiliates) services activity to cross-border services
+      trade. A ratio above 1 means commercial presence exceeds cross-border supply
+      for that sector. This full annual series covers 2000-2023.
+    unit: "ratio (Mode 3 / cross-border)"
+    valid_years: [2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008,
+                  2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017,
+                  2018, 2019, 2020, 2021, 2022, 2023]
+    modes: ["Mode 3 / Cross-border"]
+    has_sectors: true
+    caveats: >
+      A ratio above 1 indicates Mode 3 dominance but does not imply Mode 3 is
+      larger in absolute terms without knowing the level of cross-border trade.
+    synonyms:
+      - "Mode 3 ratio"
+      - "commercial presence ratio"
+      - "MOS3"
+      - "sector ratio"
+      - "mode ratio by sector"
+      - "commercial vs cross-border"
+    policy_context: >
+      Sectors with high Mode 3 ratios (e.g. finance, telecom, professional services)
+      indicate that commercial presence is the dominant mode of delivery, implying
+      that GATS Mode 3 commitments are especially relevant for market access.
