@@ -264,22 +264,26 @@ def render_ai_analyst_tab() -> None:
             resp = latest["response"]
             _render_evidence_box(resp.evidence)
 
-            # Dataset definition
+            # Dataset definition — use separate st calls to avoid HTML injection issues
             if resp.plan and resp.plan.dataset_name:
                 from services.query_interpreter import get_indicator_meta
                 meta = get_indicator_meta(resp.plan.dataset_name)
                 if meta:
-                    st.markdown(f"""
-                    <div class="def-box">
-                      <div class="def-title">Indicator definition</div>
-                      <div class="def-text">
-                        {meta.get('short_definition', '')}
-                      </div>
-                      {('<div class="def-policy">'
-                        + meta.get('policy_context', '')
-                        + '</div>') if meta.get('policy_context') else ''}
-                    </div>
-                    """, unsafe_allow_html=True)
+                    short_def = meta.get("short_definition", "").strip()
+                    policy_ctx = meta.get("policy_context", "").strip()
+                    st.markdown('<div class="def-box">', unsafe_allow_html=True)
+                    st.markdown(
+                        '<div class="def-title">Indicator definition</div>',
+                        unsafe_allow_html=True)
+                    if short_def:
+                        st.markdown(
+                            f'<div class="def-text">{short_def}</div>',
+                            unsafe_allow_html=True)
+                    if policy_ctx:
+                        st.markdown(
+                            f'<div class="def-policy">{policy_ctx}</div>',
+                            unsafe_allow_html=True)
+                    st.markdown('</div>', unsafe_allow_html=True)
         else:
             st.markdown("""
             <div class="ctx-empty">
