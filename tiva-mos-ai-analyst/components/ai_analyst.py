@@ -77,13 +77,7 @@ def _render_follow_up(questions: list[str], history_key: str) -> None:
                 unsafe_allow_html=True)
     for i, q in enumerate(questions[:3]):
         if st.button(q, key=f"fu_{history_key}_{i}", use_container_width=False):
-            with st.spinner("AI Analyst is working..."):
-                _resp = analyse(q)
-            st.session_state.analyst_history.insert(0, {
-                "id":       len(st.session_state.analyst_history),
-                "question": q,
-                "response": _resp,
-            })
+            st.session_state["pending_question"] = q
             st.rerun()
 
 
@@ -116,8 +110,19 @@ def render_ai_analyst_tab() -> None:
     # ── session state ──────────────────────────────────────────────────────
     if "analyst_history" not in st.session_state:
         st.session_state.analyst_history = []
-    if "ai_question" not in st.session_state:
-        st.session_state.ai_question = ""
+
+    # ── execute any pending question BEFORE columns render ─────────────────
+    # This runs at top-level so Streamlit Cloud handles it reliably.
+    if "pending_question" in st.session_state:
+        pending = st.session_state.pop("pending_question")
+        with st.spinner(f"Analysing: {pending[:60]}..."):
+            _resp = analyse(pending)
+        st.session_state.analyst_history.insert(0, {
+            "id":       len(st.session_state.analyst_history),
+            "question": pending,
+            "response": _resp,
+        })
+        st.rerun()
 
     # ── 3-column layout ────────────────────────────────────────────────────
     col_ctrl, col_out, col_ctx = st.columns([3, 6, 3], gap="medium")
@@ -142,13 +147,7 @@ def render_ai_analyst_tab() -> None:
                 "Analyse", use_container_width=True)
 
         if submitted and question and question.strip():
-            with st.spinner("AI Analyst is working..."):
-                resp = analyse(question.strip())
-            st.session_state.analyst_history.insert(0, {
-                "id": len(st.session_state.analyst_history),
-                "question": question.strip(),
-                "response": resp,
-            })
+            st.session_state["pending_question"] = question.strip()
             st.rerun()
 
         # Grouped suggested prompts
@@ -159,13 +158,7 @@ def render_ai_analyst_tab() -> None:
             for prompt in prompts:
                 if st.button(prompt, key=f"pg_{hash(prompt)}",
                              use_container_width=True):
-                    with st.spinner("AI Analyst is working..."):
-                        _resp = analyse(prompt)
-                    st.session_state.analyst_history.insert(0, {
-                        "id":       len(st.session_state.analyst_history),
-                        "question": prompt,
-                        "response": _resp,
-                    })
+                    st.session_state["pending_question"] = prompt
                     st.rerun()
 
         if st.session_state.analyst_history:
