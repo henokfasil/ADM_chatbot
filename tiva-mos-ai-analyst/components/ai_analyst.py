@@ -111,31 +111,35 @@ def render_ai_analyst_tab() -> None:
     if "analyst_history" not in st.session_state:
         st.session_state.analyst_history = []
 
-    # ── execute any pending question BEFORE columns render ─────────────────
-    # This runs at top-level so Streamlit Cloud handles it reliably.
+    # ── 3-column layout (created first so thinking card goes into col_out) ──
+    col_ctrl, col_out, col_ctx = st.columns([3, 6, 3], gap="medium")
+
+    # ── execute any pending question — thinking card renders in col_out ────
     if "pending_question" in st.session_state:
         pending = st.session_state.pop("pending_question")
 
-        # ── animated thinking card ─────────────────────────────────────────
-        thinking = st.empty()
-        thinking.markdown(f"""
-        <div class="ai-thinking-card">
-          <div class="ai-thinking-star">&#10022;</div>
-          <div class="ai-thinking-text">
-            <div class="ai-thinking-title">AI Analyst is working&hellip;</div>
-            <div class="ai-thinking-steps">
-              &#10003; Parsing: <i>{pending[:70]}</i><br>
-              &#8250; Querying TiVA-MoS data&nbsp;&nbsp;
-              &#8250; Calling Qwen 72B&nbsp;&nbsp;
-              &#8250; Building chart&nbsp;&nbsp;
-              &#8250; Generating policy note
+        with col_out:
+            thinking = st.empty()
+            thinking.markdown(f"""
+            <div class="ai-thinking-card">
+              <div class="ai-thinking-star">&#10022;</div>
+              <div class="ai-thinking-text">
+                <div class="ai-thinking-title">AI Analyst is working&hellip;</div>
+                <div class="ai-thinking-steps">
+                  &#10003; Parsing: <i>{pending[:70]}</i><br>
+                  &#8250; Querying TiVA-MoS data &nbsp;
+                  &#8250; Calling Qwen 72B &nbsp;
+                  &#8250; Building chart &nbsp;
+                  &#8250; Generating policy note
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
-        """, unsafe_allow_html=True)
+            """, unsafe_allow_html=True)
 
         _resp = analyse(pending)
-        thinking.empty()   # remove the card once done
+
+        with col_out:
+            thinking.empty()
 
         st.session_state.analyst_history.insert(0, {
             "id":       len(st.session_state.analyst_history),
@@ -143,9 +147,6 @@ def render_ai_analyst_tab() -> None:
             "response": _resp,
         })
         st.rerun()
-
-    # ── 3-column layout ────────────────────────────────────────────────────
-    col_ctrl, col_out, col_ctx = st.columns([3, 6, 3], gap="medium")
 
     # ══════════════════════════════════════════════════════════════════════
     # LEFT — Control Panel
