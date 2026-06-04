@@ -115,8 +115,28 @@ def render_ai_analyst_tab() -> None:
     # This runs at top-level so Streamlit Cloud handles it reliably.
     if "pending_question" in st.session_state:
         pending = st.session_state.pop("pending_question")
-        with st.spinner(f"Analysing: {pending[:60]}..."):
-            _resp = analyse(pending)
+
+        # ── animated thinking card ─────────────────────────────────────────
+        thinking = st.empty()
+        thinking.markdown(f"""
+        <div class="ai-thinking-card">
+          <div class="ai-thinking-star">&#10022;</div>
+          <div class="ai-thinking-text">
+            <div class="ai-thinking-title">AI Analyst is working&hellip;</div>
+            <div class="ai-thinking-steps">
+              &#10003; Parsing: <i>{pending[:70]}</i><br>
+              &#8250; Querying TiVA-MoS data&nbsp;&nbsp;
+              &#8250; Calling Qwen 72B&nbsp;&nbsp;
+              &#8250; Building chart&nbsp;&nbsp;
+              &#8250; Generating policy note
+            </div>
+          </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+        _resp = analyse(pending)
+        thinking.empty()   # remove the card once done
+
         st.session_state.analyst_history.insert(0, {
             "id":       len(st.session_state.analyst_history),
             "question": pending,
